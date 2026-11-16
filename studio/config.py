@@ -124,12 +124,24 @@ FONTS_DIR = DATA_DIR / "fonts"          # caption fonts, copied from studio/font
 # YouTube already has a word-by-word transcript of most videos. With this on, that is what the AI reads to find the
 # clips (seconds instead of transcribing hours), and our own model is run only on the clips themselves.
 YT_TRANSCRIPT = env("PEAKCUT_YT_TRANSCRIPT", "1") != "0"
-# the compact model for processors; a machine with a graphics card sets PEAKCUT_ASR_MODEL to the full-precision one
-ASR_MODEL_NAME = env("PEAKCUT_ASR_MODEL", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8")
+# ASR model family: "whisper" (multilingual: Hindi, Hinglish, English, 90+ langs) or "transducer" (Parakeet, English only)
+ASR_MODEL_FAMILY = env("PEAKCUT_ASR_FAMILY", "whisper").strip().lower()
+ASR_LANGUAGE = env("PEAKCUT_ASR_LANGUAGE", "auto").strip().lower()
+# the default model name depends on family: whisper-base (~140MB) or parakeet
+DEFAULT_ASR_MODEL = "sherpa-onnx-whisper-base" if ASR_MODEL_FAMILY == "whisper" else "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8"
+ASR_MODEL_NAME = env("PEAKCUT_ASR_MODEL", DEFAULT_ASR_MODEL)
 ASR_MODEL_DIR = MODELS_DIR / ASR_MODEL_NAME
 DATABASE_URL = env("DATABASE_URL") or f"sqlite:///{(DATA_DIR / 'peakcut.db').as_posix()}"
 
-for d in (USERS_DIR, MODELS_DIR, TMP_DIR, FONTS_DIR):
+# Local output folder for easy personal access to finished clips
+CLIPS_EXPORT_DIR = Path(env("PEAKCUT_CLIPS_DIR") or DATA_DIR / "exported_clips")
+# Disk safety budget: pause or stop recordings if free disk space is below this threshold (in GB)
+DISK_SAFETY_GB = float(env("PEAKCUT_DISK_SAFETY_GB", "5.0"))
+# Reconnection settings for 24/7 streams
+RECONNECT_MAX_TRIES = int(env("PEAKCUT_RECONNECT_MAX", "15"))
+RECONNECT_MAX_DELAY = float(env("PEAKCUT_RECONNECT_MAX_DELAY", "60.0"))
+
+for d in (USERS_DIR, MODELS_DIR, TMP_DIR, FONTS_DIR, CLIPS_EXPORT_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 

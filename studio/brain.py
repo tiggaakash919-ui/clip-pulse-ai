@@ -31,7 +31,33 @@ SCHEMA = {
     },
 }
 
-HEAD = """You are a clip scout for short-form gaming and streaming videos (YouTube Shorts, Reels, TikTok).
+CATEGORY_PRESETS = {
+    "gaming": {
+        "name": "Gaming",
+        "desc": "funny moments, fails, clutch plays, intense game action, rage, shock, or hype victories",
+    },
+    "podcast": {
+        "name": "Podcast / Interview",
+        "desc": "deep insights, controversial debates, memorable quotes, surprising revelations, or humorous banter",
+    },
+    "irl": {
+        "name": "IRL / Reactions",
+        "desc": "spontaneous real-world reactions, surprising encounters, situational humor, or dramatic shifts",
+    },
+    "general": {
+        "name": "General / Mixed",
+        "desc": "standalone comedic moments, engaging stories with payoffs, shock, hot takes, or strong highlights",
+    },
+}
+
+
+def category_focus(category: str) -> str:
+    cat = (category or "").lower()
+    return CATEGORY_PRESETS.get(cat, CATEGORY_PRESETS["general"])["desc"]
+
+
+HEAD = """You are a clip scout for short-form video highlights (YouTube Shorts, Reels, TikTok).
+Content genre: {category_name} ({category_focus}).
 Below is a timestamped transcript of part of a video. Each line starts with [seconds]. Lines marked (LOUD)
 are where the audio got much louder than usual: shouting, laughing, sudden action. Lines marked (CHAT)
 are where the live chat suddenly got much busier, which usually means viewers reacted to something.
@@ -40,7 +66,7 @@ Video title: {title}
 Channel: {uploader}
 
 Pick up to {n} moments that would work as standalone clips for someone who has never seen the stream:
-funny moments, fails, clutch plays, rage, shock, hot takes, or a short story with a payoff.
+{category_focus}.
 """
 
 LIVE_NOTE = """
@@ -56,7 +82,7 @@ Rules:
   complete sentence: never in the middle of a sentence or a thought. The clip must make sense on its own.
 - Do not pick intros, sponsor reads, "like and subscribe", or dead air.
 - Skip weak moments. Fewer strong clips beat many weak ones. Return [] if nothing is worth clipping.
-- score: 0-100, how likely a stranger keeps watching. Be honest; most clips are 50-80.
+- score: 0-100, ranking heuristic of how likely a viewer keeps watching. Be honest; most clips are 50-80.
 - hook: at most 5 words, ALL CAPS, shown as big text on the video. Curiosity, but true to what happens.
 - title: at most 70 characters, for the post.
 - description: one or two sentences.
@@ -107,20 +133,26 @@ def _fmt(lines):
                      for l in lines)
 
 
-def _tidy(c, s, e):
+def _tidy(c, s, e, words=None):
     """Whatever the AI answered, only this shape ever leaves here: clamped numbers, short link-free text."""
     cat = str(c.get("category", "other")).lower()
     tags = c.get("hashtags") if isinstance(c.get("hashtags"), list) else []
     tags = [re.sub(r"\W", "", str(h))[:30] for h in tags if isinstance(h, (str, int))]
-    words = c.get("highlight_words") if isinstance(c.get("highlight_words"), list) else []
+    words_list = c.get("highlight_words") if isinstance(c.get("highlight_words"), list) else []
+    excerpt = ""
+    if words:
+        excerpt = " ".join(w["w"] for w in words if s <= w["s"] <= e)[:200]
     return {
-        "start": s, "end": e, "score": max(0, min(100, int(_num(c.get("score"))))),
+        "start": s, "end": e, "duration": round(e - s, 2), "score": max(0, min(100, int(_num(c.get("score"))))),
         "category": cat if cat in CATEGORIES else "other",
         "hook": roman.to_roman(_text(c.get("hook"), 60)).upper(), "title": roman.to_roman(_text(c.get("title"), 100)),
         "description": roman.to_roman(_text(c.get("description"), 300)),
         "hashtags": [t for t in tags if t][:8],
-        "highlight_words": [roman.to_roman(_text(h, 30)) for h in words][:8],
+        "highlight_words": [roman.to_roman(_text(h, 30)) for h in words_list][:8],
         "reason": _text(c.get("reason"), 200),
+        "transcript_excerpt": excerpt,
+        "signals": c.get("signals", {}),
+        "degraded_mode": bool(c.get("degraded_mode", False)),
     }
 
 
@@ -161,7 +193,8 @@ def make_lines(words, loud=None, chat=None):
 def loud_zscore(db):
     if len(db) < 5:
         return np.zeros(len(db))
-    return (db - np.median(db)) / (db.std() + 1e-6)
+    arr = np.asarray(db, dtype=float) if not hasattr(db, "std") else db
+    return (arr - np.median(arr)) / (arr.std() + 1e-6)
 
 
 def ask_ai(prompt, schema=None, purpose="AI call"):
@@ -226,26 +259,65 @@ def _snap(clip, lines, words, min_len, max_len, duration):
     return round(max(0.0, s - 0.15), 2), round(min(duration, e + tail), 2)
 
 
-def fallback_by_loudness(db, words, n, max_len, duration):
-    """No AI available: take the loudest stretches that contain speech."""
+def heuristic_highlight_scorer(db, words, n, max_len, duration, min_len=15, category="general"):
+    """Intelligent explainable heuristic highlight scorer when no AI semantic model is available.
+    Combines:
+    1. Loudness change relative to baseline (z-score)
+    2. Speech density & conversational rhythm (bursts of words after quiet pauses)
+    3. Natural sentence/clause boundaries (sentence_ends)
+    4. Conservative filtering (zero clips if threshold not met)
+    """
     z = loud_zscore(db)
-    picks, order = [], np.argsort(-z)
-    for sec in order:
-        s = max(0.0, float(sec) - max_len * 0.6)
-        e = min(duration, s + max_len)
-        if any(not (e <= p["start"] or s >= p["end"]) for p in picks):
+    if len(z) == 0 or len(words) < 5:
+        return []
+    lines = make_lines(words, z)
+    candidates = []
+    step = 5
+    for sec in range(0, max(1, int(duration) - int(min_len)), step):
+        s_raw = float(sec)
+        e_raw = min(duration, s_raw + max_len)
+        win_words = [w for w in words if s_raw <= w["s"] <= e_raw]
+        if len(win_words) < 6:
             continue
-        if not any(s <= w["s"] <= e for w in words):
+        window_z = z[int(s_raw):int(e_raw)] if len(z) > int(s_raw) else np.array([0.0])
+        max_z = float(np.max(window_z)) if len(window_z) else 0.0
+        dur_raw = e_raw - s_raw
+        wps = len(win_words) / max(1.0, dur_raw)
+        if max_z < 0.6 and wps < 1.6:
             continue
-        picks.append({"start": s, "end": e, "score": 50, "category": "other", "hook": "WAIT FOR IT",
-                      "title": "Loud moment", "description": "", "hashtags": [], "highlight_words": [],
-                      "reason": "Picked by loudness because the AI was unavailable."})
+        candidates.append((s_raw, e_raw, max_z, wps, win_words))
+
+    candidates.sort(key=lambda item: -(item[2] * 20 + item[3] * 12))
+    picks = []
+    cat = category if category in CATEGORIES else "other"
+    for s_raw, e_raw, max_z, wps, win_words in candidates:
+        s, e = _snap({"start": s_raw, "end": e_raw}, lines, words, min_len, max_len, duration)
+        if e - s < min_len or _overlaps(s, e, picks):
+            continue
+        score = int(min(90, max(45, 40 + max_z * 12 + min(25, wps * 10))))
+        hook = "CRAZY REACTION" if max_z > 2.0 and category in ("gaming", "irl") else "INTENSE MOMENT" if max_z > 1.8 else "MUST WATCH"
+        cand = {
+            "start": s, "end": e, "score": score, "category": cat, "hook": hook,
+            "title": f"Highlight moment ({s:.0f}s - {e:.0f}s)",
+            "description": f"Extracted stream moment from second {s:.0f} to {e:.0f}.",
+            "hashtags": [cat, "clip", "stream", "highlight"],
+            "highlight_words": [re.sub(r'[^a-zA-Z0-9]', '', w['w']) for w in win_words[:4] if len(w['w']) > 3],
+            "reason": f"Acoustic/speech heuristic: energy peak {max_z:+.1f}σ, dialogue rate {wps:.1f} w/s. (Degraded mode: semantic AI unavailable).",
+            "signals": {"loudness_zscore": round(max_z, 2), "words_per_sec": round(wps, 2), "degraded_mode": True},
+            "degraded_mode": True,
+        }
+        picks.append(_tidy(cand, s, e, words))
         if len(picks) >= n:
             break
     return picks
 
 
-def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=15, max_len=60, log=print):
+def fallback_by_loudness(db, words, n, max_len, duration, min_len=15, category="general"):
+    """Heuristic fallback when semantic AI is not configured."""
+    return heuristic_highlight_scorer(db, words, n, max_len, duration, min_len=min_len, category=category)
+
+
+def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=15, max_len=60, category="general", log=print):
     z = loud_zscore(db)
     lines = make_lines(words, z)
     if not lines:
@@ -257,11 +329,13 @@ def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=
         windows.append((t, min(duration, t + WINDOW_SEC)))
         t += WINDOW_SEC - OVERLAP_SEC
     per_window = max(2, min(8, int(np.ceil(max_clips * 1.5 / len(windows))) + 1))
+    cat_info = CATEGORY_PRESETS.get(category.lower(), CATEGORY_PRESETS["general"])
     for a, b in windows:
         chunk = [l for l in lines if a <= l["s"] < b]
         if len(chunk) < 3:
             continue
-        prompt = (HEAD.format(title=_safe(title) or "unknown", uploader=_safe(uploader) or "unknown", n=per_window)
+        prompt = (HEAD.format(title=_safe(title) or "unknown", uploader=_safe(uploader) or "unknown", n=per_window,
+                              category_name=cat_info["name"], category_focus=cat_info["desc"])
                   + RULES.format(min_len=min_len, max_len=max_len, transcript=_fmt(chunk)))
         try:
             out, used_model, spent = ask_ai(prompt, purpose="Video: finding clips")
@@ -271,8 +345,8 @@ def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=
             log(f"AI window {a:.0f}-{b:.0f}s failed: {e}")
     note = ""
     if not used_model:
-        found = fallback_by_loudness(db, words, max_clips, max_len, duration)
-        note = "The AI was unavailable, so clips were picked by loudness only."
+        found = heuristic_highlight_scorer(db, words, max_clips, max_len, duration, min_len=min_len, category=category)
+        note = "The AI was unavailable, so clips were picked using acoustic and speech pacing heuristics."
     clips = []
     for c in sorted(found, key=lambda c: -_num(c.get("score"))):
         s, e = _snap(c, lines, words, min_len, max_len, duration)
@@ -280,7 +354,7 @@ def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=
             continue
         if _overlaps(s, e, clips):
             continue  # overlaps a better clip
-        clips.append(_tidy(c, s, e))
+        clips.append(_tidy(c, s, e, words))
         if len(clips) >= max_clips:
             break
     clips.sort(key=lambda c: c["start"])
@@ -324,7 +398,8 @@ def describe(text, title="", uploader=""):
 
 
 # ---------------------------------------------------------------- live: two judges that never see each other's input
-TRANSCRIPT_JUDGE = """You are a clip scout for short-form gaming and streaming videos (YouTube Shorts, Reels, TikTok).
+TRANSCRIPT_JUDGE = """You are a clip scout for short-form video highlights (YouTube Shorts, Reels, TikTok).
+Content genre: {category_name} ({category_focus}).
 You only get the WORDS spoken on a live stream: a timestamped transcript, each line starting with [seconds].
 You cannot hear how loud anything was or see the chat; judge purely on what was said.
 
@@ -335,7 +410,7 @@ The transcript covers seconds {start:.0f} to {now:.0f}. If a moment is still unf
 you will see it again in the next check.
 {must}
 Pick up to {n} moments that would work as standalone clips for someone who has never seen the stream:
-funny moments, fails, clutch plays, rage, shock, hot takes, or a short story with a payoff.
+{category_focus}.
 """
 MUST_PICK = "This time you MUST return the single best moment in this stretch, even if it is only decent."
 NOT_MUST = "Most checks should return []. Only return a moment you would stop scrolling for."
@@ -360,13 +435,15 @@ SIG_SCHEMA = {
 }
 
 
-def judge_transcript(words, start, now, title="", uploader="", min_len=15, max_len=60, existing=(), n=2, must=False):
+def judge_transcript(words, start, now, title="", uploader="", min_len=15, max_len=60, existing=(), n=2, must=False, category="general"):
     """Judge 1: words only. Returns (clips, tokens)."""
     lines = make_lines(words)
     if len(lines) < 3:
         return [], 0
+    cat_info = CATEGORY_PRESETS.get(category.lower(), CATEGORY_PRESETS["general"])
     prompt = (TRANSCRIPT_JUDGE.format(title=_safe(title) or "unknown", uploader=_safe(uploader) or "unknown", start=start, now=now,
-                                      n=n, must=MUST_PICK if must else NOT_MUST)
+                                      n=n, must=MUST_PICK if must else NOT_MUST,
+                                      category_name=cat_info["name"], category_focus=cat_info["desc"])
               + RULES.format(min_len=min_len, max_len=max_len, transcript=_fmt(lines)))
     out, _model, spent = ask_ai(prompt, purpose="Live: words judge")
     clips = []
@@ -374,7 +451,7 @@ def judge_transcript(words, start, now, title="", uploader="", min_len=15, max_l
         s, e = _snap(c, lines, words, min_len, max_len, now)
         if e - s < min_len - 1 or _overlaps(s, e, list(existing) + clips):
             continue
-        clips.append(_tidy(c, s, e))
+        clips.append(_tidy(c, s, e, words))
     return clips, spent
 
 

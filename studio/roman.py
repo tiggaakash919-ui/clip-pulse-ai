@@ -41,9 +41,18 @@ def needs_roman(text: str) -> bool:
     return bool(DEVANAGARI.search(text) or OTHER_SCRIPT.search(text) or MORE_SCRIPTS.search(text))
 
 
-def drawable(text: str) -> bool:
-    """Can the caption fonts draw this? They have Latin letters (with accents), digits and punctuation only."""
-    return not any(ch.isalpha() and not (ord(ch) < 0x250 or 0x1E00 <= ord(ch) <= 0x1EFF) for ch in text or "")
+def drawable(text: str, allow_devanagari: bool = True) -> bool:
+    """Can the caption fonts draw this? Poppins supports Latin letters, digits, and full Devanagari."""
+    for ch in text or "":
+        if not ch.isalpha():
+            continue
+        c = ord(ch)
+        if c < 0x250 or (0x1E00 <= c <= 0x1EFF):
+            continue
+        if allow_devanagari and (0x0900 <= c <= 0x097F):
+            continue
+        return False
+    return True
 
 
 # ---------------------------------------------------------------- Russian-style (Cyrillic), Greek and Korean letters

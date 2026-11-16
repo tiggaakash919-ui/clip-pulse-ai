@@ -15,11 +15,20 @@ _lock = threading.Lock()
 state = {"doing": False, "percent": 0, "error": ""}
 
 
+def is_whisper() -> bool:
+    return getattr(config, "ASR_MODEL_FAMILY", "whisper") == "whisper" or "whisper" in config.ASR_MODEL_NAME.lower()
+
+
 def ready() -> bool:
-    """Is the whole model there: the word list and all three parts?"""
+    """Is the whole model there: the word list and required ONNX parts?"""
     d = config.ASR_MODEL_DIR
-    if not (d / "tokens.txt").is_file():
+    if not d.is_dir():
         return False
+    has_tokens = (d / "tokens.txt").is_file() or any(d.glob("*tokens*.txt"))
+    if not has_tokens:
+        return False
+    if is_whisper():
+        return any(d.glob("*encoder*.onnx")) and any(d.glob("*decoder*.onnx"))
     return all(any(d.glob(f"{part}*.onnx")) for part in ("encoder", "decoder", "joiner"))
 
 
@@ -37,7 +46,8 @@ def ensure() -> None:
         if ready():
             return
         state.update(doing=True, percent=0, error="")
-        print("\n  Downloading the speech model (one time, about 480 MB)...\n", flush=True)
+        kind = "Multilingual Whisper" if is_whisper() else "Parakeet"
+        print(f"\n  Downloading the speech model ({kind}, model {config.ASR_MODEL_NAME})...\n", flush=True)
         config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
         tmp, part = config.MODELS_DIR / "speech-model.tar.bz2", config.MODELS_DIR / "speech-model.unpacking"
         try:
@@ -50,13 +60,18 @@ def ensure() -> None:
                         t.extract(m, part)
             got = part / config.ASR_MODEL_NAME
             if not got.is_dir():
-                raise OSError("the download did not contain the model")
+                # Some tar archives extract without a top-level dir or slightly different name
+                subdirs = [p for p in part.iterdir() if p.is_dir()]
+                if len(subdirs) == 1:
+                    got = subdirs[0]
+                else:
+                    got = part
             shutil.rmtree(config.ASR_MODEL_DIR, ignore_errors=True)        # a half-finished one from before
-            got.rename(config.ASR_MODEL_DIR)
+            shutil.move(str(got), str(config.ASR_MODEL_DIR))
             print("  Speech model ready.\n", flush=True)
         except Exception as e:  # noqa: BLE001
             state["error"] = str(e)[-200:]
-            raise RuntimeError("PeakCut couldn't download its speech model (about 480 MB, needed once). Check the "
+            raise RuntimeError(f"PeakCut couldn't download its speech model ({config.ASR_MODEL_NAME}). Check the "
                                "internet connection and free disk space, then try again.") from e
         finally:
             state["doing"] = False

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#FF8B33</color>
+    <color name="brand_press">#F27A1F</color>
+    <color name="brand_dark">#A9480A</color>
+    <color name="frame">#1E1612</color>
+    <color name="frame_surface">#2C221D</color>
+    <color name="frame_line">#3D3029</color>
+    <color name="text_primary">#F4EEEA</color>
+    <color name="text_secondary">#A99A91</color>
+    <color name="status_good">#0F8A57</color>
+    <color name="status_bad">#D3343F</color>
+    <color name="status_pending">#FF8B33</color>
+</resources>

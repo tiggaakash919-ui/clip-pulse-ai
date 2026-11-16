@@ -50,11 +50,32 @@ def _model_files(d) -> dict:
     raise FileNotFoundError(f"No speech model files in {d}")
 
 
+def _whisper_files(d) -> dict:
+    enc = next(d.glob("*encoder*.onnx"), None)
+    dec = next(d.glob("*decoder*.onnx"), None)
+    tok = (d / "tokens.txt") if (d / "tokens.txt").is_file() else next(d.glob("*tokens*.txt"), None)
+    if not (enc and dec and tok):
+        raise FileNotFoundError(f"No whisper onnx model files found in {d}")
+    return {"encoder": str(enc), "decoder": str(dec), "tokens": str(tok)}
+
+
 def _new():
     import sherpa_onnx
     from . import fetch_model
     fetch_model.ensure()             # downloaded here, once, if it was never fetched
     d = config.ASR_MODEL_DIR
+    if fetch_model.is_whisper():
+        w = _whisper_files(d)
+        lang = config.ASR_LANGUAGE if config.ASR_LANGUAGE != "auto" else ""
+        return sherpa_onnx.OfflineRecognizer.from_whisper(
+            encoder=w["encoder"],
+            decoder=w["decoder"],
+            tokens=w["tokens"],
+            num_threads=THREADS,
+            language=lang,
+            task="transcribe",
+            provider=PROVIDER,
+        )
     return sherpa_onnx.OfflineRecognizer.from_transducer(
         **_model_files(d),
         tokens=str(d / "tokens.txt"),
@@ -143,10 +164,14 @@ BATCH = int(os.environ.get("PEAKCUT_ASR_BATCH", "1"))   # pieces decoded togethe
 def _words(tokens, timestamps, a: int, b: int) -> list:
     out = []
     off, seg_end = a / 16000.0, b / 16000.0
+    if (not timestamps or len(timestamps) < len(tokens)) and tokens:
+        dur = max(0.5, seg_end - off)
+        step = dur / max(1, len(tokens))
+        timestamps = [round(i * step, 3) for i in range(len(tokens))]
     cur, gap = None, False
     for tok, t in zip(tokens, timestamps):
-        new_word = tok.startswith((" ", "▁")) or gap
-        piece = tok.replace("▁", " ").strip()
+        new_word = tok.startswith((" ", "▁", "Ġ", " ")) or gap
+        piece = tok.replace("▁", " ").replace("Ġ", " ").replace(" ", " ").strip()
         if not piece:
             gap = True      # a space on its own: whatever comes next starts a new word ("in" "120", not "in120")
             continue

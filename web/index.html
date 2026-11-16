@@ -1703,15 +1703,21 @@ function everyPick(cid, v) {
 }
 function liveHtml(j) {
   const L = j.live || {elapsed:0, lines:[], level:[], chat:null, checks:0, buffer_sec:0, pending_clips:0};
+  const st = L.state || (j.status === "live" ? "RECORDING" : j.status.toUpperCase());
   return `<div class="livecard">
-    <div class="lc-head"><div class="lc-title"><span class="pill live"><span class="dot"></span>Live</span>
+    <div class="lc-head"><div class="lc-title"><span class="pill ${st === 'PAUSED' ? 'mid' : st === 'RECONNECTING' ? 'mid' : 'live'}"><span class="dot"></span>${esc(st)}</span>
         <h3>${esc(j.title || j.source.name)}</h3><p class="sub">${esc(j.uploader)}${j.uploader ? " · " : ""}${esc(j.stage)}</p></div>
       <div class="lc-acts"><button class="btn primary" data-act="clipnow" data-j="${j.id}" data-s="30">${ic("scissors")}Clip last 30s</button>
         <button class="btn" data-act="clipnow" data-j="${j.id}" data-s="60">Last 60s</button>
+        ${st === 'PAUSED' ? `<button class="btn" data-act="resumelive" data-j="${j.id}">${ic("play")}Resume</button>` : `<button class="btn" data-act="pauselive" data-j="${j.id}">${ic("pause")}Pause</button>`}
         <button class="btn danger" data-act="stoplive" data-j="${j.id}">${ic("stop")}Stop</button></div></div>
     <div class="stats"><div class="stat"><b>${fmt(L.elapsed)}</b><span>Recorded</span></div><div class="stat"><b>${Math.round(L.buffer_sec / 60)} min</b><span>Kept in buffer</span></div>
       <div class="stat">${everyPick(j.creator, L.every_min ?? 3)}<span>${L.every_min === 0 ? (L.auto?.warming ? "AI checks: learning the stream" : L.auto?.waiting ? "AI checks: jump spotted, checking soon" : `AI checks on jumps · ${L.auto?.spikes || 0} so far`) : "AI checks every"}</span></div>
       <div class="stat"><b>${L.checks}</b><span>AI calls${L.skipped ? ` · ${L.skipped} skipped` : ""}${L.rejected ? ` · ${L.rejected} turned down` : ""}</span></div><div class="stat"><b>${j.clips.length}</b><span>Clips so far</span></div>
+      ${L.category ? `<div class="stat"><b>${esc(L.category.toUpperCase())}</b><span>Genre</span></div>` : ""}
+      ${L.reconnect_count ? `<div class="stat"><b>${L.reconnect_count}</b><span>Reconnects</span></div>` : ""}
+      ${L.disk_free_gb ? `<div class="stat"><b>${L.disk_free_gb} GB</b><span>Disk free</span></div>` : ""}
+      ${L.degraded_mode ? `<div class="stat" style="color:var(--brand)"><b>Heuristic</b><span>Degraded mode</span></div>` : ""}
       ${L.pending_clips ? `<div class="stat"><b>${L.pending_clips}</b><span>Hand clip being prepared</span></div>` : ""}</div>
     <div class="meters">
       <div class="meter"><h4>Loudness, last minute</h4>${spark(L.level, "", -55, -8)}</div>
@@ -2385,6 +2391,14 @@ document.addEventListener("click", async e => {
       S.creators.forEach(c => { if (c.live_job === d.j) c.live_job = null; }); render();
       toast("Recording stopped. Clips already made are kept.", "ok");
       api(`/api/live/${d.j}/stop`, {method:"POST"}).catch(e => toast(e.message, "bad")).finally(tick); return;
+    }
+    if (a === "pauselive") {
+      api(`/api/live/${d.j}/pause`, {method:"POST"}).then(() => { toast("Live recording paused.", "ok"); tick(); }).catch(e => toast(e.message, "bad"));
+      return;
+    }
+    if (a === "resumelive") {
+      api(`/api/live/${d.j}/resume`, {method:"POST"}).then(() => { toast("Live recording resumed.", "ok"); tick(); }).catch(e => toast(e.message, "bad"));
+      return;
     }
     if (a === "clipnow") { await send(`/api/live/${d.j}/clip`, {seconds:Number(d.s)}); return toast(`Clipping the last ${d.s} seconds…`, "ok"); }
     if (a === "resendverify") {

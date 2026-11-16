@@ -1,7 +1,9 @@
 """Live sessions: record a stream into a rolling buffer, transcribe as it goes, let the AI pick clips."""
 import collections
 import json
+import random
 import re
+import shutil
 import socket
 import ssl
 import subprocess
@@ -26,6 +28,27 @@ class NotLive(Exception):
     pass
 
 
+class StreamUpcoming(NotLive):
+    pass
+
+
+class StreamEnded(NotLive):
+    pass
+
+
+LIVE_STATES = {
+    "IDLE",
+    "VALIDATING",
+    "WAITING_FOR_SOURCE",
+    "RECORDING",
+    "RECONNECTING",
+    "PAUSED",
+    "DRAINING",
+    "STOPPED",
+    "ERROR",
+}
+
+
 def media_safe(e) -> str:
     from . import safe
     return safe.friendly(e, 300)
@@ -47,7 +70,7 @@ class _Quiet:
 
 
 def resolve(url: str) -> dict:
-    """Ask yt-dlp for the stream's playable address. Raises NotLive if the channel is offline."""
+    """Ask yt-dlp for the stream's playable address. Distinguishes upcoming, live, and ended."""
     import yt_dlp
     opts = {"quiet": True, "no_warnings": True, "noplaylist": True, "logger": _Quiet(),
             "format": "b[height<=720]/bv*[height<=720]+ba/b"}
@@ -60,14 +83,22 @@ def resolve(url: str) -> dict:
         if media.note_refusal(url, e):
             raise NotLive(media.YT_BLOCKED) from e
         raise NotLive(str(e)[-200:]) from e
-    if not info or not info.get("is_live"):
-        raise NotLive("This channel is not live right now.")
+    if not info:
+        raise NotLive("Could not retrieve information for this URL.")
+    status = info.get("live_status") or ("is_live" if info.get("is_live") else "not_live")
+    if status == "is_upcoming":
+        raise StreamUpcoming("This livestream is scheduled as upcoming and has not started yet.")
+    if status == "was_live":
+        raise StreamEnded("This livestream has concluded and ended.")
+    if not info.get("is_live") and status != "is_live":
+        raise NotLive("This channel or video is not live right now.")
     fmts = info.get("requested_formats") or [info]
     title = info.get("title") or ""
     if "(live)" in title and info.get("description"):  # Twitch puts the real stream title here
         title = str(info["description"]).splitlines()[0][:120]
     return {"urls": [f["url"] for f in fmts], "title": title,
-            "uploader": info.get("uploader") or info.get("channel") or ""}
+            "uploader": info.get("uploader") or info.get("channel") or "",
+            "live_status": status}
 
 
 def active():
@@ -135,10 +166,38 @@ class Session:
         self.last_spike = -999.0      # when the last jump was sent to the AI (stream seconds)
         self.base = {}                # running averages the jumps are measured against, shown on the card
         self.spikes = 0
+        self.state = "IDLE"
+        self.is_paused = False
+        self.reconnect_count = 0
+        self.last_capture_time = 0.0
+        self.disk_free_gb = 0.0
 
     # ---------------------------------------------------------------- recording
+    def set_state(self, state: str, stage_msg: str = ""):
+        with self.lock:
+            self.state = state
+            if stage_msg:
+                self.job["stage"] = stage_msg
+            self.job["live_state"] = state
+            if self.job.get("live"):
+                self.job["live"]["state"] = state
+        jobs.save(self.job)
+
+    def pause(self):
+        with self.lock:
+            self.is_paused = True
+            if self.proc and self.proc.poll() is None:
+                self.proc.terminate()
+            self.set_state("PAUSED", "Recording paused by user")
+
+    def resume(self):
+        with self.lock:
+            self.is_paused = False
+            self.set_state("RECORDING", "Resuming live capture")
+
     def start(self):
         SESSIONS[self.job["id"]] = self
+        self.set_state("VALIDATING", "Validating livestream connection")
         threading.Thread(target=ctx.bind(self._ingest), daemon=True).start()
         threading.Thread(target=ctx.bind(self._analyze), daemon=True).start()
         m = re.match(r"^https?://(?:www\.)?twitch\.tv/([A-Za-z0-9_]+)", self.job["source"]["url"])
@@ -152,6 +211,7 @@ class Session:
         self.user_stopped = True
         self.stop_flag.set()
         with self.lock:
+            self.set_state("STOPPED", note)
             self.job.update(status="done", stage=note)
         jobs.save(self.job)
         if self.proc and self.proc.poll() is None:
@@ -160,17 +220,57 @@ class Session:
     def _ingest(self):
         fails = 0
         url = self.job["source"]["url"]
+        max_tries = getattr(config, "RECONNECT_MAX_TRIES", 15)
+        max_delay = getattr(config, "RECONNECT_MAX_DELAY", 60.0)
         while not self.stop_flag.is_set():
+            if self.is_paused:
+                self.stop_flag.wait(1)
+                continue
+
+            # Disk space safety check
+            try:
+                free_gb = shutil.disk_usage(self.buf).free / (1024 ** 3)
+                self.disk_free_gb = round(free_gb, 2)
+                if free_gb < getattr(config, "DISK_SAFETY_GB", 5.0):
+                    self.stop(f"Stopped: low disk space ({free_gb:.1f} GB free, safety minimum is {config.DISK_SAFETY_GB} GB)")
+                    break
+            except Exception:
+                pass
+
             try:
                 info = resolve(url)
+            except StreamUpcoming as e:
+                self.set_state("WAITING_FOR_SOURCE", str(e))
+                self.stop_flag.wait(20)
+                continue
+            except StreamEnded as e:
+                self.end_note = str(e)
+                break
             except NotLive as e:
                 fails += 1
-                if self.samples == 0 or fails >= 3:
-                    if self.samples == 0:
-                        self.job["error"] = f"Could not start recording: {e}"
+                if self.samples == 0 and fails >= max_tries:
+                    self.job["error"] = f"Could not start recording: {e}"
+                    self.set_state("ERROR", self.job["error"])
                     break
-                self.stop_flag.wait(10)
+                if fails >= max_tries:
+                    self.end_note = f"Stream ended or unreachable ({e})"
+                    break
+                delay = min(max_delay, (2 ** min(fails, 5)) + random.uniform(0.5, 2.0))
+                self.reconnect_count += 1
+                self.set_state("RECONNECTING", f"Reconnecting in {delay:.1f}s ({fails}/{max_tries}): {e}")
+                self.stop_flag.wait(delay)
                 continue
+            except Exception as e:
+                fails += 1
+                if fails >= max_tries:
+                    self.end_note = f"Error during acquisition: {media_safe(e)}"
+                    break
+                delay = min(max_delay, (2 ** min(fails, 5)) + random.uniform(0.5, 2.0))
+                self.reconnect_count += 1
+                self.set_state("RECONNECTING", f"Reconnecting in {delay:.1f}s ({fails}/{max_tries})")
+                self.stop_flag.wait(delay)
+                continue
+
             if not self.job.get("uploader"):
                 self.job.update(title=info["title"], uploader=info["uploader"])
             self.part += 1
@@ -186,16 +286,23 @@ class Session:
                     "-reset_timestamps", "1", "-segment_format", "mpegts", "-segment_list", f"{p}.csv",
                     "-segment_list_type", "csv", f"{p}_%05d.ts",
                     "-map", a_in, "-vn", "-ac", "1", "-ar", str(SR), "-f", "s16le", "pipe:1"]
+
+            self.set_state("RECORDING", "Capturing live stream")
             with open(self.dir / "ffmpeg.log", "ab") as errlog:
                 self.proc = subprocess.Popen(cmd, cwd=self.buf, stdout=subprocess.PIPE, stderr=errlog,
                                              creationflags=media.NO_WINDOW)
                 got = 0
                 while True:
+                    if self.is_paused:
+                        if self.proc and self.proc.poll() is None:
+                            self.proc.terminate()
+                        break
                     data = self.proc.stdout.read(SR * 2)  # one second of 16-bit mono
                     if not data:
                         break
                     data = data[: len(data) // 2 * 2]
                     got += len(data)
+                    self.last_capture_time = time.time()
                     x = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
                     level = float(20 * np.log10(np.sqrt((x ** 2).mean() + 1e-10))) if len(x) else -100.0
                     with self.lock:
@@ -203,10 +310,18 @@ class Session:
                         self.samples += len(data) // 2
                         self.db.append(level)
                 self.proc.wait()
-            fails = 0 if got > SR * 2 * 20 else fails + 1
-            if fails >= 3:
-                break
-            self.stop_flag.wait(3)
+
+            if not self.stop_flag.is_set() and not self.is_paused:
+                fails = 0 if got > SR * 2 * 30 else fails + 1
+                if fails >= max_tries:
+                    self.end_note = "Stream ended or connection dropped repeatedly"
+                    break
+                delay = min(max_delay, (2 ** min(fails, 5)) + random.uniform(0.5, 2.0))
+                self.reconnect_count += 1
+                self.set_state("RECONNECTING", f"Stream interrupted; reconnecting in {delay:.1f}s ({fails}/{max_tries})")
+                self.stop_flag.wait(delay)
+
+        self.set_state("DRAINING", "Processing remaining audio buffer")
         self.ended = True
 
     def _scan_segments(self):
@@ -355,12 +470,19 @@ class Session:
             return self._verdict(verdict, f"Skipped: {st['live_per_hour']} clips this hour already")
         usage.set_context(self.job["creator"], self.job["title"] or "Live stream")
         title, up = self.job["title"], self.job["uploader"]
-        try:
-            cands, tok = brain.judge_transcript(win, ws, now, title, up, st["min_len"], st["max_len"], self.job["clips"],
-                                                n=1 if every <= 2 else 2, must=must)  # Auto (0) asks for one
-        except Exception as e:  # noqa: BLE001
-            self.job["ai"]["last_error"] = str(e)[-200:]
-            return self._verdict(verdict, "AI error: " + str(e)[-80:])
+        category = st.get("category", "general")
+        cands, tok = [], 0
+        if config.ai_ready():
+            try:
+                cands, tok = brain.judge_transcript(win, ws, now, title, up, st["min_len"], st["max_len"], self.job["clips"],
+                                                    n=1 if every <= 2 else 2, must=must, category=category)
+            except Exception as e:  # noqa: BLE001
+                self.job["ai"]["last_error"] = str(e)[-200:]
+                cands = brain.heuristic_highlight_scorer(self.db[int(ws):int(now)], win, 1, st["max_len"], now - ws,
+                                                         min_len=st["min_len"], category=category)
+        else:
+            cands = brain.heuristic_highlight_scorer(self.db[int(ws):int(now)], win, 1, st["max_len"], now - ws,
+                                                     min_len=st["min_len"], category=category)
         self.checks += 1
         self.tokens += tok
         keep = [c for c in cands if c["score"] >= (40 if must else st["min_score"])]
@@ -527,7 +649,15 @@ class Session:
             sec = int(elapsed)
             self.job.update(
                 duration=elapsed,
-                live={"elapsed": round(elapsed), "buffer_sec": round(self.segments[-1][2] - self.segments[0][1]) if self.segments else 0,
+                live_state=self.state,
+                live={"state": self.state,
+                      "elapsed": round(elapsed),
+                      "reconnect_count": self.reconnect_count,
+                      "last_capture": round(self.last_capture_time, 1) if self.last_capture_time else None,
+                      "disk_free_gb": self.disk_free_gb,
+                      "category": self.settings.get("category", "general"),
+                      "degraded_mode": not config.ai_ready(),
+                      "buffer_sec": round(self.segments[-1][2] - self.segments[0][1]) if self.segments else 0,
                       "lines": [l["text"] for l in lines], "level": [round(x) for x in self.db[-60:]],
                       "chat": [self.chat.get(t, 0) for t in range(max(0, sec - 60), sec)] if self.chat_on or self.chat_total else None,
                       "checks": self.checks, "skipped": self.skipped, "tokens": self.tokens, "words": len(self.words),
@@ -550,6 +680,7 @@ class Session:
                 busy = self._transcribe_step()
                 if not started and self.samples:
                     started = True
+                    self.set_state("RECORDING", "Recording stream")
                     self.job.update(status="live", stage="Recording")
                     creators.log(cid, f"Recording started: {self.job['title']}")
                 self._manual_step()
@@ -576,6 +707,8 @@ class Session:
             if not busy:
                 time.sleep(2)
         failed = bool(self.job.get("error")) and not started
+        final_state = "ERROR" if failed else "STOPPED"
+        self.set_state(final_state, "Could not record" if failed else self.end_note)
         self.job.update(status="error" if failed else "done", stage="Could not record" if failed else self.end_note)
         jobs.save(self.job)
         creators.log(cid, f"Recording finished ({self.end_note.lower()}): {len(self.job['clips'])} clips, "
@@ -660,6 +793,22 @@ def start_session(creator: dict, url=None) -> dict:
     jobs.save(job)
     Session(job, creator).start()
     return job
+
+
+def quick_live(url: str, category: str = "general", layout: str = "blur", style: str = "bounce",
+               min_len: int = 15, max_len: int = 60, min_score: int = 70) -> dict:
+    """Start live clipping directly from a single URL for personal use."""
+    url = normalize(url)
+    all_cs = creators.all_creators()
+    c = next((x for x in all_cs if x.get("id") == "live_streamer" or x.get("name") == "Livestream Clips"), None)
+    if not c:
+        c = creators.save({"id": "live_streamer", "name": "Livestream Clips", "category": category,
+                           "layout": layout, "style": style, "min_len": min_len, "max_len": max_len,
+                           "min_score": min_score, "buffer_min": 20})
+    else:
+        c.update(category=category, layout=layout, style=style, min_len=min_len, max_len=max_len, min_score=min_score)
+        creators.save(c)
+    return start_session(c, url)
 
 
 def _watch_user(uid):

@@ -282,7 +282,7 @@ def _own_address(host: str) -> bool:
     import ipaddress
     name = host.strip().lower()
     name = name[1:name.index("]")] if name.startswith("[") and "]" in name else name.rsplit(":", 1)[0] if ":" in name else name
-    if name in ("localhost", urlparse(config.PUBLIC_URL).hostname or "") or name.endswith(".localhost"):
+    if name in ("localhost", urlparse(config.PUBLIC_URL).hostname or "") or name.endswith((".localhost", ".trycloudflare.com", ".loca.lt", ".pinggy.link")):
         return True
     try:
         ipaddress.ip_address(name)
@@ -718,13 +718,27 @@ def create_from_link(body: dict = Body(...)):
     creator = str(body.get("creator") or "") or None
     if creator and not creators.get(creator):
         raise HTTPException(404, "No such creator")
+    seen = media._PREVIEWS.get(url)  # already looked up while the user was typing
+    opts = body.get("options") or {}
+    if (seen and seen.get("is_live")) or "/live" in url or (seen and seen.get("duration", 0) == 0):
+        # Auto-detect livestream: start continuous live recording and clipping
+        try:
+            c = creators.get(creator) if creator else None
+            if not c:
+                job = live.quick_live(url, category=opts.get("category", "general"), layout=opts.get("layout", "blur"),
+                                      style=opts.get("style", "bounce"), min_len=int(opts.get("min_len", 15)),
+                                      max_len=int(opts.get("max_len", 60)), min_score=int(opts.get("min_score", 70)))
+            else:
+                job = live.start_session(c, url)
+            return jobs.public(job)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
     try:
         with _create_lock:
             _job_slots()
-            job = jobs.create({"type": "url", "url": url, "name": url}, body.get("options") or {}, creator=creator)
+            job = jobs.create({"type": "url", "url": url, "name": url}, opts, creator=creator)
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e) if isinstance(e, ValueError) else "Those options aren't valid.")
-    seen = media._PREVIEWS.get(url)  # already looked up while the user was typing: show it straight away
     if seen:
         job.update(title=seen["title"], uploader=seen["uploader"], duration=seen["duration"])
         if media.save_thumb(jobs.job_dir(job["id"]), url=url):
@@ -1216,6 +1230,62 @@ def go_live(cid: str, body: dict = Body(default={})):
         raise HTTPException(400, str(e))
 
 
+@app.post("/api/live/quick")
+def quick_live(body: dict = Body(...)):
+    _need_verified()
+    url = str((body or {}).get("url") or "").strip()
+    if not url:
+        raise HTTPException(400, "Provide a YouTube, Twitch or Kick live stream URL.")
+    category = str(body.get("category") or "general")
+    layout = str(body.get("layout") or "blur")
+    style = str(body.get("style") or "bounce")
+    min_len = int(body.get("min_len", 15))
+    max_len = int(body.get("max_len", 60))
+    min_score = int(body.get("min_score", 70))
+    try:
+        job = live.quick_live(url, category=category, layout=layout, style=style,
+                              min_len=min_len, max_len=max_len, min_score=min_score)
+        return jobs.public(job)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/live/{jid}/pause")
+def pause_live(jid: str):
+    s = live.mine(jid)
+    if not s or s.ended:
+        raise HTTPException(404, "This recording is not active.")
+    s.pause()
+    return {"ok": True, "state": s.state}
+
+
+@app.post("/api/live/{jid}/resume")
+def resume_live(jid: str):
+    s = live.mine(jid)
+    if not s or s.ended:
+        raise HTTPException(404, "This recording is not active.")
+    s.resume()
+    return {"ok": True, "state": s.state}
+
+
+@app.get("/api/live/{jid}/state")
+def get_live_state(jid: str):
+    s = live.mine(jid)
+    if not s:
+        job = jobs.get(jid)
+        if not job or job.get("user") != ctx.uid():
+            raise HTTPException(404, "Recording not found.")
+        return {"state": job.get("live_state", "STOPPED"), "job": jobs.public(job)}
+    return {
+        "state": s.state,
+        "is_paused": s.is_paused,
+        "reconnect_count": s.reconnect_count,
+        "last_capture_time": s.last_capture_time,
+        "disk_free_gb": s.disk_free_gb,
+        "job": jobs.public(s.job)
+    }
+
+
 @app.post("/api/live/{jid}/stop")
 def stop_live(jid: str):
     s = live.mine(jid)
@@ -1238,6 +1308,32 @@ def clip_now(jid: str, body: dict = Body(...)):
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e))
     return {"ok": True}
+
+
+@app.get("/api/system/preflight")
+def system_preflight():
+    import platform
+    import shutil
+    import sys
+    free_gb = 0.0
+    try:
+        free_gb = round(shutil.disk_usage(config.DATA_DIR).free / (1024 ** 3), 2)
+    except Exception:
+        pass
+    from . import fetch_model, tools
+    return {
+        "os": platform.system(),
+        "platform_release": platform.release(),
+        "python_version": sys.version.split()[0],
+        "ffmpeg_available": "ffmpeg" not in tools.missing(),
+        "ffprobe_available": "ffprobe" not in tools.missing(),
+        "speech_model_ready": fetch_model.ready(),
+        "speech_model_name": config.ASR_MODEL_NAME,
+        "speech_model_family": getattr(config, "ASR_MODEL_FAMILY", "whisper"),
+        "ai_ready": config.ai_ready(),
+        "free_disk_gb": free_gb,
+        "clips_export_dir": str(config.CLIPS_EXPORT_DIR)
+    }
 
 
 # ================================================================ AI usage
