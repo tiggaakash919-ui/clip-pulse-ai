@@ -21,6 +21,11 @@ CLAUDE.local.md
 .vscode/
 .idea/
 *.bat
+!scripts/windows/*.bat
+!1_SETUP.bat
+!2_START_ONLINE.bat
+!3_STOP.bat
+!START_LOCAL.bat
 Thumbs.db
 .DS_Store
 

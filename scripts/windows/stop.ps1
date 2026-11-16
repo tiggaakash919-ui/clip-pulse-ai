@@ -25,12 +25,14 @@ Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match "studio\.se
 }
 
 # Reset Windows sleep state
-$Win32Sleep = Add-Type -MemberDefinition @"
+try {
+    $Win32Sleep = Add-Type -MemberDefinition @"
 [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 public static extern uint SetThreadExecutionState(uint esFlags);
-"@ -Name "Win32SleepReset" -Namespace "PeakCutStop" -PassThru
+"@ -Name "Win32SleepReset" -Namespace "PeakCutStop" -PassThru -ErrorAction SilentlyContinue
 
-$ES_CONTINUOUS = [uint32]0x80000000
-$Win32Sleep::SetThreadExecutionState($ES_CONTINUOUS) | Out-Null
+    $ES_CONTINUOUS = [uint32]0x80000000L
+    $Win32Sleep::SetThreadExecutionState($ES_CONTINUOUS) | Out-Null
+} catch {}
 
 Write-Host "PeakCut stopped cleanly." -ForegroundColor Green
