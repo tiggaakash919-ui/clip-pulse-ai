@@ -99,7 +99,8 @@ def _ydl(opts):
     import yt_dlp
     # a channel or playlist link is answered as "a list" straight away, never walked video by video
     return yt_dlp.YoutubeDL({"noplaylist": True, "quiet": True, "no_warnings": True, "logger": _Quiet(),
-                             "extract_flat": "in_playlist", "playlistend": 1, "socket_timeout": 20,
+                             "extract_flat": "in_playlist", "playlistend": 1, "socket_timeout": 30,
+                             "retries": 10, "fragment_retries": 10, "extractor_retries": 5, "file_access_retries": 3,
                              "concurrent_fragment_downloads": 4, **opts})
 
 
@@ -139,8 +140,14 @@ def youtube_words(url: str):
         track = next((f for f in auto.get(key) or [] if f.get("ext") == "json3" and f.get("url")), None) if key else None
         if not track:
             return None
-        raw = ydl.urlopen(track["url"]).read(40_000_000)
-    return _caption_words(json.loads(raw)), key.replace("-orig", "")
+        try:
+            raw = ydl.urlopen(track["url"]).read(40_000_000)
+            if isinstance(raw, bytes):
+                raw = raw.decode("utf-8", "ignore")
+            data = json.loads(raw)
+        except Exception:
+            return None
+    return _caption_words(data), key.replace("-orig", "")
 
 
 def youtube_english_words(url: str):
@@ -158,8 +165,14 @@ def youtube_english_words(url: str):
         track = next((t for t in tracks if t), None)
         if not track:
             return None
-        raw = ydl.urlopen(track["url"]).read(40_000_000)
-    words = _caption_words(json.loads(raw))
+        try:
+            raw = ydl.urlopen(track["url"]).read(40_000_000)
+            if isinstance(raw, bytes):
+                raw = raw.decode("utf-8", "ignore")
+            data = json.loads(raw)
+        except Exception:
+            return None
+    words = _caption_words(data)
     return words or None
 
 

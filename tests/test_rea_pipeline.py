@@ -306,5 +306,26 @@ class TestAndroidApp(unittest.TestCase):
         self.assertGreater(apk_path.stat().st_size, 10000)
 
 
+class TestBugFixes(unittest.TestCase):
+    def test_find_clips_with_callable_as_category(self):
+        # Ensure passing a callable (e.g. notes.append) as the 9th positional argument does NOT crash with AttributeError
+        notes = []
+        words = [{"w": "hello", "s": 0.0, "e": 1.0}, {"w": "world.", "s": 1.0, "e": 2.0}]
+        db = [10.0, 12.0]
+        try:
+            # Pass notes.append as 9th positional argument
+            clips, ai = brain.find_clips(words, db, 2.0, "Title", "Uploader", 2, 1, 2, notes.append)
+            self.assertIsInstance(clips, list)
+        except AttributeError as e:
+            self.fail(f"find_clips raised AttributeError: {e}")
+
+    def test_safe_friendly_unexpected_end_of_data(self):
+        from studio import safe
+        err = "UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 1-2: unexpected end of data"
+        friendly_msg = safe.friendly(err)
+        self.assertIn("interrupted", friendly_msg.lower())
+
+
 if __name__ == "__main__":
     unittest.main()
+

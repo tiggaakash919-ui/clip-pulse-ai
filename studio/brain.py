@@ -318,6 +318,10 @@ def fallback_by_loudness(db, words, n, max_len, duration, min_len=15, category="
 
 
 def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=15, max_len=60, category="general", log=print):
+    if callable(category):
+        log = category
+        category = "general"
+    category = str(category or "general").strip().lower()
     z = loud_zscore(db)
     lines = make_lines(words, z)
     if not lines:
@@ -329,7 +333,7 @@ def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=
         windows.append((t, min(duration, t + WINDOW_SEC)))
         t += WINDOW_SEC - OVERLAP_SEC
     per_window = max(2, min(8, int(np.ceil(max_clips * 1.5 / len(windows))) + 1))
-    cat_info = CATEGORY_PRESETS.get(category.lower(), CATEGORY_PRESETS["general"])
+    cat_info = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS["general"])
     for a, b in windows:
         chunk = [l for l in lines if a <= l["s"] < b]
         if len(chunk) < 3:
@@ -440,7 +444,8 @@ def judge_transcript(words, start, now, title="", uploader="", min_len=15, max_l
     lines = make_lines(words)
     if len(lines) < 3:
         return [], 0
-    cat_info = CATEGORY_PRESETS.get(category.lower(), CATEGORY_PRESETS["general"])
+    category = str(category or "general").strip().lower()
+    cat_info = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS["general"])
     prompt = (TRANSCRIPT_JUDGE.format(title=_safe(title) or "unknown", uploader=_safe(uploader) or "unknown", start=start, now=now,
                                       n=n, must=MUST_PICK if must else NOT_MUST,
                                       category_name=cat_info["name"], category_focus=cat_info["desc"])
