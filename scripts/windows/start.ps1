@@ -8,8 +8,14 @@ Set-Location $RepoRoot
 
 $VenvPython = Join-Path $RepoRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $VenvPython)) {
-    Write-Host "[ERROR] Virtual environment not found. Please run .\scripts\windows\setup.ps1 first." -ForegroundColor Red
-    exit 1
+    Write-Host "`n[INFO] First-time setup detected (Virtual environment not found)." -ForegroundColor Yellow
+    Write-Host "[INFO] Automatically running setup to prepare everything... Please wait.`n" -ForegroundColor Cyan
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir "setup.ps1")
+    if (-not (Test-Path $VenvPython)) {
+        Write-Host "`n[ERROR] Setup could not create the virtual environment." -ForegroundColor Red
+        Write-Host "Please ensure Python 3.10-3.12 is installed with 'Add python.exe to PATH'." -ForegroundColor Yellow
+        exit 1
+    }
 }
 
 # Windows Win32 API for preventing idle sleep during continuous 24/7 capture
