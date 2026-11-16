@@ -190,6 +190,24 @@ def _words(tokens, timestamps, a: int, b: int) -> list:
     return out
 
 
+def _result(st):
+    """Tokens and timestamps, even when a token holds half of a Hindi/Urdu character."""
+    r = st.result
+    ts = [float(t) for t in r.timestamps]
+    try:
+        return list(r.tokens), ts
+    except UnicodeDecodeError:
+        pass
+    try:
+        parts = r.text.split()
+    except UnicodeDecodeError:
+        return [], []
+    if not parts or not ts:
+        return [], []
+    step = max(1, len(ts) // len(parts))
+    return ["▁" + w for w in parts], [ts[min(i * step, len(ts) - 1)] for i in range(len(parts))]
+
+
 def decode_pieces(pieces: list, rec=None) -> list:
     """[(tokens, timestamps), ...] for float32 pieces of audio, done on this machine with one copy of the model."""
     streams = []
@@ -202,7 +220,7 @@ def decode_pieces(pieces: list, rec=None) -> list:
         rec.decode_streams(streams)
     finally:
         _free.put(rec)
-    return [(list(st.result.tokens), [float(t) for t in st.result.timestamps]) for st in streams]
+    return [_result(st) for st in streams]
 
 
 def _remote_ok() -> bool:

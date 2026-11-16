@@ -670,9 +670,11 @@ def _run_job(job):
             continue
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         category = o.get("category", "general")
-        found, ai = brain.find_clips(bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000, job["title"],
-                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]),
-                                     category=category, log=notes.append)
+        found, ai = brain.find_clips(
+            bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000,
+            title=job["title"], uploader=job["uploader"], max_clips=quota,
+            min_len=int(o["min_len"]), max_len=int(o["max_len"]),
+            category=category, log=notes.append)
         tokens += ai.get("tokens", 0)
         model = ai.get("model") or model
         if ai.get("note"):
