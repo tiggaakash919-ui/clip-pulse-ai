@@ -52,7 +52,7 @@ CATEGORY_PRESETS = {
 
 
 def category_focus(category: str) -> str:
-    cat = (category or "").lower()
+    cat = str(category or "general").strip().lower()
     return CATEGORY_PRESETS.get(cat, CATEGORY_PRESETS["general"])["desc"]
 
 

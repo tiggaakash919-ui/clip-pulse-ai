@@ -12,18 +12,34 @@ if exist "%~dp0data\bin" set "PATH=%~dp0data\bin;%PATH%"
 rem ---- Pehle se chal raha hai?
 call :portup && goto ready
 
-rem ---- Python 3.10+
+rem ---- Python 3.10+ Detection (Checks py, python, and standard installation folders)
 set "PY="
 py -3 -c "import sys;assert sys.version_info>=(3,10)" >nul 2>&1 && set "PY=py -3"
 if not defined PY python -c "import sys;assert sys.version_info>=(3,10)" >nul 2>&1 && set "PY=python"
 if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
 if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python310\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python310\python.exe"
 if not defined PY if exist "C:\Python312\python.exe" set "PY=C:\Python312\python.exe"
 if not defined PY if exist "C:\Python311\python.exe" set "PY=C:\Python311\python.exe"
+if not defined PY if exist "C:\Python310\python.exe" set "PY=C:\Python310\python.exe"
+if not defined PY if exist "%ProgramFiles%\Python312\python.exe" set "PY=%ProgramFiles%\Python312\python.exe"
+if not defined PY if exist "%ProgramFiles%\Python311\python.exe" set "PY=%ProgramFiles%\Python311\python.exe"
+if not defined PY if exist "%ProgramFiles%\Python310\python.exe" set "PY=%ProgramFiles%\Python310\python.exe"
+
 if not defined PY (
-  echo [..] Python install ho raha hai...
+  echo [..] Python 3.10+ nahi mila. Automatic install ho raha hai...
   winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements
-  echo [!] Python install hua. Window band karke yeh file dobara chalayein.
+  rem Re-check known installation paths immediately
+  if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+  if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+  if exist "C:\Python312\python.exe" set "PY=C:\Python312\python.exe"
+  if exist "C:\Python311\python.exe" set "PY=C:\Python311\python.exe"
+  if exist "%ProgramFiles%\Python312\python.exe" set "PY=%ProgramFiles%\Python312\python.exe"
+  if exist "%ProgramFiles%\Python311\python.exe" set "PY=%ProgramFiles%\Python311\python.exe"
+)
+
+if not defined PY (
+  echo [!] Python install hua. Naya environment pehchanne ke liye is window ko band karke dobara chalayein.
   pause & exit /b 1
 )
 
@@ -31,6 +47,10 @@ rem ---- FFmpeg
 where ffmpeg >nul 2>&1 || (
   echo [..] FFmpeg install ho raha hai...
   winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
+  for /d %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg*") do (
+    for /d %%B in ("%%D\*\bin") do set "PATH=%%B;%PATH%"
+  )
+  if exist "%LOCALAPPDATA%\Microsoft\WinGet\Links" set "PATH=%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH%"
 )
 
 rem ---- Virtual env + packages (requirements.txt badle to dobara install)
@@ -70,9 +90,15 @@ if /i not "%~1"=="online" (
   start "" http://127.0.0.1:%PORT%
   exit /b 0
 )
+
 where cloudflared >nul 2>&1 || (
-  echo [..] Cloudflare tunnel engine install ho raha hai...
-  winget install -e --id Cloudflare.cloudflared --accept-source-agreements --accept-package-agreements
+  if exist "%~dp0data\bin\cloudflared.exe" (
+    set "PATH=%~dp0data\bin;%PATH%"
+  ) else (
+    echo [..] Cloudflare tunnel engine install ho raha hai...
+    winget install -e --id Cloudflare.cloudflared --accept-source-agreements --accept-package-agreements
+    if exist "%LOCALAPPDATA%\Microsoft\WinGet\Links" set "PATH=%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH%"
+  )
 )
 echo [..] Public link ban raha hai, neeche "trycloudflare.com" wala link dekhein:
 cloudflared tunnel --url http://127.0.0.1:%PORT%
