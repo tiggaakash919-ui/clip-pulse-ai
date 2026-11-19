@@ -23,7 +23,12 @@ This guide documents the native Android App built for Clip Pulse AI.
    - The full editor is still one tap away, so every feature of the web app remains available.
 2. **Start engine from the app**:
    - **Start engine** asks Termux to run the local ClipPulse server.
-   - If the Termux build does not allow external commands, the app copies the start command and opens Termux: paste it and press Enter once.
+   - The app checks first whether the installed Termux accepts a command from another app. If it does not
+     (the Play Store build is one), the app copies the start command and opens Termux: paste it and press Enter
+     once.
+   - The copied command runs `scripts/termux/keepalive.sh`: it does nothing while the engine answers, and
+     starts it again within seconds if it stops. One paste is enough until the phone is switched off.
+   - **Kaise chalta hai?** in the engine card explains, in plain words, why the engine lives in Termux.
 3. **Job screen**:
    - Tap a video to see its clips, progress, errors and buttons to play or save each clip.
 4. **Switch Between Phone and PC**:

@@ -114,8 +114,13 @@ public class HomeActivity extends Activity {
 
         // ---- engine
         LinearLayout engine = Ui.card(this);
-        TextView engineLabel = Ui.text(this, "ENGINE", 11, Ui.color(this, R.color.text_secondary), true);
-        engine.addView(engineLabel);
+        LinearLayout engineHead = Ui.row(this);
+        engineHead.addView(Ui.text(this, "ENGINE", 11, Ui.color(this, R.color.text_secondary), true),
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        TextView how = Ui.text(this, "Kaise chalta hai?", 12, Ui.color(this, R.color.brand), false);
+        how.setOnClickListener(v -> showEngineInfo());
+        engineHead.addView(how);
+        engine.addView(engineHead);
         engineTitle = Ui.text(this, "Checking...", 20, Ui.color(this, R.color.text_primary), true);
         engine.addView(engineTitle);
         engineDetail = Ui.text(this, "", 13, Ui.color(this, R.color.text_secondary), false);
@@ -132,8 +137,11 @@ public class HomeActivity extends Activity {
         engineButtons.addView(editor, new LinearLayout.LayoutParams(0, Ui.dp(this, 46), 1));
         engine.addView(engineButtons);
 
-        setupHint = Ui.text(this, "Start engine kaam na kare? Yahan tap karein: command copy hoga, " +
-                "Termux me paste karke Enter dabayein.", 12, Ui.color(this, R.color.text_secondary), false);
+        setupHint = Ui.text(this, ServerStarter.canCommand(this)
+                        ? "Engine band ho jaye to Start engine dabayein: app khud Termux me chala deta hai."
+                        : "Is Termux build me app se command nahi chalti. Yahan tap karein: command copy hoga aur "
+                          + "Termux khulega — ek baar paste karke Enter dabayein. Uske baad engine chalta rehta hai.",
+                12, Ui.color(this, R.color.text_secondary), false);
         setupHint.setPadding(0, Ui.dp(this, 10), 0, 0);
         setupHint.setOnClickListener(v -> copySetupCommand());
         engine.addView(setupHint);
@@ -247,11 +255,21 @@ public class HomeActivity extends Activity {
         engineDetail.setText("Termux me ClipPulse server khul raha hai. 10-20 second lag sakte hain.");
         boolean sent = ServerStarter.start(this);
         if (!sent) {
-            engineDetail.setText("Termux permission nahi mili. Neeche setup line par tap karke command copy karein.");
+            engineDetail.setText("Command copy ho gaya aur Termux khul gaya. Wahan paste karke Enter dabayein — "
+                    + "phir engine chalta rahega.");
             setupHint.setTextColor(Ui.color(this, R.color.brand));
         }
         ui.postDelayed(() -> checkHealth(false), 8000);
         ui.postDelayed(() -> checkHealth(false), 18000);
+    }
+
+    private void showEngineInfo() {
+        new AlertDialog.Builder(this)
+                .setTitle("Engine kaise chalta hai")
+                .setMessage(ServerStarter.explanation(this))
+                .setPositiveButton("Samajh gaya", null)
+                .setNeutralButton("Command copy", (d, w) -> copySetupCommand())
+                .show();
     }
 
     private void openEditor() {
