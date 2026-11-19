@@ -76,7 +76,7 @@ if [ -d "/sdcard/Download" ]; then
     echo "=========================================================="
     echo "  APK SUCCESSFULLY PLACED IN DOWNLOAD FOLDER!            "
     echo "  Location: $TARGET_APK"
-    echo "  Size: $(du -h "$TARGET_APK" | cut -f1)"
+    echo "  Size: $(stat -c %s "$TARGET_APK" 2>/dev/null || echo '?') bytes"
     echo "=========================================================="
 else
     echo "[WARNING] /sdcard/Download not accessible. Saved to $REPO_ROOT/data/ClipPulseAI.apk"

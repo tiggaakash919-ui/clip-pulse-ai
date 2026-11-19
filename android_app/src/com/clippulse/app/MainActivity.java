@@ -215,7 +215,7 @@ public class MainActivity extends Activity {
     }
 
     private void copyCommandToClipboard() {
-        String cmd = "cd ~/ClipPulse && bash scripts/termux/run_all_24_7.sh";
+        String cmd = "cd ~/ClipPulse 2>/dev/null || cd ~/PeakCut; bash scripts/termux/run_all_24_7.sh";
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard != null) {
             ClipData clip = ClipData.newPlainText("Clip Pulse AI Command", cmd);

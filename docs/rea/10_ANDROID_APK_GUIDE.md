@@ -7,7 +7,7 @@ This guide documents the native Android App built for Clip Pulse AI.
 ## 1. APK Location & Specifications
 
 - **File Path**: `/sdcard/Download/ClipPulseAI.apk` (Download folder)
-- **Local Copy**: `/data/user/0/com.termux/files/home/ClipPulse/data/ClipPulseAI.apk`
+- **Local Copy**: `data/ClipPulseAI.apk` inside the project folder
 - **Package Name**: `com.clippulse.app`
 - **Application Label**: `Clip Pulse AI`
 - **Minimum Android Version**: Android 7.0 (API Level 24)
@@ -18,18 +18,20 @@ This guide documents the native Android App built for Clip Pulse AI.
 
 ## 2. Key App Features
 
-1. **Embedded Live Studio**:
-   - High-performance WebView configured with DOM storage, hardware acceleration, and full JavaScript execution.
-   - Automatically connects to `http://127.0.0.1:8766` on phone startup.
-2. **Instant Clip Downloads**:
-   - Integrated Android `DownloadManager` saves any exported clip straight to your phone's main Downloads directory with system notification.
-3. **Switch Between Phone and PC**:
+1. **Native dashboard**:
+   - Java screens show engine status, a link box, and the latest videos without opening a browser.
+   - The full editor is still one tap away, so every feature of the web app remains available.
+2. **Start engine from the app**:
+   - **Start engine** asks Termux to run the local ClipPulse server.
+   - If the Termux build does not allow external commands, the app copies the start command and opens Termux: paste it and press Enter once.
+3. **Job screen**:
+   - Tap a video to see its clips, progress, errors and buttons to play or save each clip.
+4. **Switch Between Phone and PC**:
    - The top action bar includes a **Server** button.
    - **Current Phone Mode**: Set to `http://127.0.0.1:8766`.
-   - **Future PC Mode**: When you run Clip Pulse AI on your PC later, simply tap the **Server** button and enter your PC's local WiFi IP (e.g., `http://192.168.1.50:8766`) to control your PC setup directly from your phone!
-4. **Offline Detection & Reconnect**:
-   - Color-coded status indicator dot (Green = Connected, Orange = Pending, Red = Offline).
-   - If the backend is stopped, a clean error screen with a "Retry" button appears.
+   - **Future PC Mode**: enter your PC's local WiFi IP (e.g., `http://192.168.1.50:8766`) to control your PC setup from your phone.
+5. **Offline Detection & Reconnect**:
+   - Colour-coded status dot (Green = Connected, Red = Offline), with automatic retries.
 
 ---
 
