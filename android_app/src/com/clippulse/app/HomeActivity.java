@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 public class HomeActivity extends Activity {
     static final String PREFS = "ClipPulsePrefs";
     static final String KEY_SERVER_URL = "server_url";
+    static final String KEY_AUTO_START = "auto_start_engine_on_open";
     static final String DEFAULT_SERVER = "http://127.0.0.1:8766/app";
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
@@ -39,10 +40,12 @@ public class HomeActivity extends Activity {
     private SharedPreferences prefs;
     private View statusDot;
     private TextView engineTitle, engineDetail, jobsEmpty, newStatus, setupHint;
+    private android.widget.Switch autoToggle;
     private LinearLayout jobsBox;
     private EditText urlInput;
     private Button makeButton;
     private boolean autoTried;
+    private boolean toastShown;
     private boolean running;
     private volatile boolean engineOnline;
 
@@ -61,6 +64,8 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         setContentView(build());
+        autoTried = false;                 // app open karne par engine kaam karna hai
+        toastShown = false;
         refreshAll(true);
     }
 
@@ -136,6 +141,20 @@ public class HomeActivity extends Activity {
         editor.setOnClickListener(v -> openEditor());
         engineButtons.addView(editor, new LinearLayout.LayoutParams(0, Ui.dp(this, 46), 1));
         engine.addView(engineButtons);
+
+        LinearLayout autoRow = Ui.row(this);
+        autoToggle = new android.widget.Switch(this);
+        autoToggle.setChecked(prefs.getBoolean(KEY_AUTO_START, true));
+        autoToggle.setText("Engine kholne se start");
+        autoToggle.setTextSize(13);
+        autoToggle.setTextColor(Ui.color(this, R.color.text_secondary));
+        autoToggle.setOnCheckedChangeListener((b, isChecked) -> {
+            prefs.edit().putBoolean(KEY_AUTO_START, isChecked).apply();
+            if (isChecked && !engineOnline) startEngine();
+        });
+        autoRow.addView(autoToggle, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 42)));
+        engine.addView(autoRow);
 
         setupHint = Ui.text(this, ServerStarter.canCommand(this)
                         ? "Engine band ho jaye to Start engine dabayein: app khud Termux me chala deta hai."
@@ -227,7 +246,7 @@ public class HomeActivity extends Activity {
                 } else {
                     engineTitle.setText("Engine offline");
                     engineDetail.setText("Start engine dabayein, ya Server se doosra address set karein.");
-                    if (maybeStart && !autoTried) {
+                    if (maybeStart && !autoTried && prefs.getBoolean(KEY_AUTO_START, true)) {
                         autoTried = true;
                         startEngine();
                     }
