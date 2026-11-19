@@ -270,6 +270,12 @@ public class HomeActivity extends Activity {
             engineDetail.setText("Ready to make clips.");
             return;
         }
+        if (!ServerStarter.installed(this)) {
+            engineTitle.setText("Remote engine recommend karein");
+            engineDetail.setText("Aapke phone me Termux nahi hai, isliye engine chal nahi sakta. " +
+                    "Server phone change karne ko Server button dhire — CMP, ya remote karein.");
+            return;
+        }
         engineTitle.setText("Engine start ho raha hai...");
         engineDetail.setText("Termux me ClipPulse server khul raha hai. 10-20 second lag sakte hain.");
         boolean sent = ServerStarter.start(this);

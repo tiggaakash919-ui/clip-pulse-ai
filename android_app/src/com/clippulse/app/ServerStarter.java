@@ -65,7 +65,7 @@ final class ServerStarter {
 
     static void copyStartCommand(Activity activity) {
         ClipboardManager cm = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        if (cm != null) {
+        if (cm != null && installed(activity)) {
             cm.setPrimaryClip(ClipData.newPlainText("ClipPulse start command", START_COMMAND));
             Toast.makeText(activity,
                     "Start command copy ho gaya. Termux me paste karke Enter dabayein.",
