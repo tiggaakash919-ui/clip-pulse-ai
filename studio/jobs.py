@@ -449,7 +449,7 @@ def render_one(job, clip, words):
     save(job)
 
 
-CLIP_MINUTES = float(config.env("PEAKCUT_CLIP_MINUTES", "15"))     # the longest one clip may take to make
+CLIP_MINUTES = float(config.env("CLIPPULSE_CLIP_MINUTES", "15"))     # the longest one clip may take to make
 
 
 def _wait_for_clips(job, futures, began, workers):
@@ -715,6 +715,7 @@ def _run_job(job):
             continue
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         category = o.get("category", "general")
+        s0 = int((a - lo) / 16000)          # where this part starts in the loudness list for the whole range
         found, ai = brain.find_clips(
             bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000,
             title=job["title"], uploader=job["uploader"], max_clips=quota,

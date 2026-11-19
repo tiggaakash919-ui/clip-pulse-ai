@@ -11,9 +11,9 @@ echo "  Building Clip Pulse AI Android App (APK)                     "
 echo "=========================================================="
 
 # Run build pipeline inside Ubuntu container with Android SDK
-proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c '
+proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c '
 set -e
-BUILD_DIR="/root/PeakCut/android_app"
+BUILD_DIR="/root/ClipPulse/android_app"
 ANDROID_JAR="/root/android-sdk/platforms/android-36/android.jar"
 BUILD_TOOLS="/root/android-sdk/build-tools/36.0.0"
 AAPT2="$BUILD_TOOLS/aapt2"
@@ -38,8 +38,8 @@ $AAPT2 link -I "$ANDROID_JAR" \
 
 echo "[3/6] Compiling Java source files with javac..."
 javac -encoding UTF-8 -cp "$ANDROID_JAR" -d build/obj \
-    build/gen/com/peakcut/app/R.java \
-    src/com/peakcut/app/*.java
+    build/gen/com/clippulse/app/R.java \
+    src/com/clippulse/app/*.java
 
 echo "[4/6] Converting bytecode to Dalvik Executable (classes.dex) with D8..."
 $D8 --output build/dex/ --lib "$ANDROID_JAR" $(find build/obj -name "*.class")
@@ -62,22 +62,22 @@ fi
 
 echo "[6/6] Signing APK with apksigner..."
 $APKSIGNER sign --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android \
-    --out build/PeakCut.apk build/aligned.apk
+    --out build/ClipPulseAI.apk build/aligned.apk
 
-$APKSIGNER verify build/PeakCut.apk
-cp -f build/PeakCut.apk /root/PeakCut/data/PeakCut.apk
+$APKSIGNER verify build/ClipPulseAI.apk
+cp -f build/ClipPulseAI.apk /root/ClipPulse/data/ClipPulseAI.apk
 echo "[SUCCESS] Clip Pulse AI APK built and verified successfully!"
 '
 
 # Copy final APK to user download folder
-TARGET_APK="/sdcard/Download/PeakCut.apk"
+TARGET_APK="/sdcard/Download/ClipPulseAI.apk"
 if [ -d "/sdcard/Download" ]; then
-    cp -f "$REPO_ROOT/data/PeakCut.apk" "$TARGET_APK"
+    cp -f "$REPO_ROOT/data/ClipPulseAI.apk" "$TARGET_APK"
     echo "=========================================================="
     echo "  APK SUCCESSFULLY PLACED IN DOWNLOAD FOLDER!            "
     echo "  Location: $TARGET_APK"
     echo "  Size: $(du -h "$TARGET_APK" | cut -f1)"
     echo "=========================================================="
 else
-    echo "[WARNING] /sdcard/Download not accessible. Saved to $REPO_ROOT/data/PeakCut.apk"
+    echo "[WARNING] /sdcard/Download not accessible. Saved to $REPO_ROOT/data/ClipPulseAI.apk"
 fi

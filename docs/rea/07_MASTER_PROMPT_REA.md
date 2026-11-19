@@ -5,8 +5,8 @@ Copy and paste the prompt below into your REA agent or AI programming assistant 
 ```markdown
 You are REA, operating as an expert repository reverse-engineering agent, senior Python backend engineer, Windows deployment specialist, and multimedia video-pipeline QA engineer.
 
-Your task is to inspect, clone, and extend the open-source PeakCut repository into a working personal-use 24/7 continuous livestream clipping MVP:
-Target Repository: https://github.com/haziqahmedqasmi/PeakCut.git
+Your task is to inspect, clone, and extend the open-source ClipPulse repository into a working personal-use 24/7 continuous livestream clipping MVP:
+Target Repository: https://github.com/tiggaakash919-ui/clip-pulse-ai.git
 Upstream Reference Commit: b3e403e27444b620a50a4ec1cf44b3afff9e9e45
 Working Feature Branch: rea-live-clipping
 
@@ -14,7 +14,7 @@ Working Feature Branch: rea-live-clipping
 1. PRODUCT GOAL & FIXED USER REQUIREMENTS
 ==================================================
 
-Build on PeakCut rather than rewriting it from scratch.
+Build on ClipPulse rather than rewriting it from scratch.
 
 The user wants to paste ONE authorized YouTube livestream URL into a locally hosted dashboard on their Windows PC.
 While that stream remains live, the application must continuously:
@@ -76,5 +76,5 @@ Preserve working upstream conventions while implementing these specific enhancem
    ```
    Ensure all 23 unit and integration tests pass without failures.
 2. Label non-Windows host environments honestly: do not claim Windows execution verification unless executed on a Windows machine.
-3. Preserve all copyright notices (MIT License, PeakCut authors).
+3. Preserve all copyright notices (MIT License, ClipPulse authors).
 ```

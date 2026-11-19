@@ -18,7 +18,7 @@ if command -v termux-wake-lock >/dev/null 2>&1; then
 fi
 
 mkdir -p "$REPO_ROOT/data"
-PID_FILE="$REPO_ROOT/data/peakcut.pid"
+PID_FILE="$REPO_ROOT/data/clippulse.pid"
 
 cleanup() {
     echo ""
@@ -41,7 +41,7 @@ echo ""
 # Start Clip Pulse AI studio server
 if command -v proot-distro >/dev/null 2>&1 && proot-distro list 2>&1 | grep -q "ubuntu"; then
     echo "[INFO] Running via high-performance Ubuntu container (Python 3.12 + FFmpeg)..."
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cd /root/PeakCut && python3 -m studio.server"
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cd /root/ClipPulse && python3 -m studio.server"
 else
     python -m studio.server
 fi

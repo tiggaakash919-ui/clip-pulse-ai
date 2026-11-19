@@ -23,7 +23,7 @@ fi
 if [ ! -f "$CLOUDFLARED" ]; then
     echo "[INFO] Downloading Cloudflare Tunnel engine (aarch64)..."
     proot-distro login ubuntu -- bash -c "curl -L -s https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /tmp/cloudflared && chmod +x /tmp/cloudflared"
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cp /tmp/cloudflared /root/PeakCut/data/bin/cloudflared && chmod +x /root/PeakCut/data/bin/cloudflared"
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cp /tmp/cloudflared /root/ClipPulse/data/bin/cloudflared && chmod +x /root/ClipPulse/data/bin/cloudflared"
 fi
 
 # Stop any previous tunnel

@@ -1,4 +1,4 @@
-package com.peakcut.app;
+package com.clippulse.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends Activity {
 
-    private static final String PREFS_NAME = "PeakCutPrefs";
+    private static final String PREFS_NAME = "ClipPulsePrefs";
     private static final String KEY_SERVER_URL = "server_url";
     private static final String LOCAL_SERVER_URL = "http://127.0.0.1:8766/app";
     private static final String HOTSPOT_SERVER_URL = "http://192.168.43.1:8766/app";
@@ -215,7 +215,7 @@ public class MainActivity extends Activity {
     }
 
     private void copyCommandToClipboard() {
-        String cmd = "cd ~/PeakCut && bash scripts/termux/run_all_24_7.sh";
+        String cmd = "cd ~/ClipPulse && bash scripts/termux/run_all_24_7.sh";
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard != null) {
             ClipData clip = ClipData.newPlainText("Clip Pulse AI Command", cmd);
@@ -236,7 +236,7 @@ public class MainActivity extends Activity {
             "3. Termux Lock in Recent Apps:\n" +
             "   Recent apps screen me Termux par long-press karke lock (padlock) icon daba dein taaki clear-all se Termux close na ho.\n\n" +
             "4. Online Link:\n" +
-            "   Aapka latest online link hamesha phone ke Download folder me 'peakcut_online_url.txt' me save hota rehta hai."
+            "   Aapka latest online link hamesha phone ke Download folder me 'clippulse_online_url.txt' me save hota rehta hai."
         );
         builder.setPositiveButton("OK", null);
         builder.setNeutralButton("Copy Command", new DialogInterface.OnClickListener() {

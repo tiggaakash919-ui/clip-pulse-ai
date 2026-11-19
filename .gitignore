@@ -26,8 +26,8 @@ CLAUDE.local.md
 !2_START_ONLINE.bat
 !3_STOP.bat
 !START_LOCAL.bat
-!PeakCut_START.bat
-!PeakCut_ONLINE.bat
+!ClipPulse_START.bat
+!ClipPulse_ONLINE.bat
 Thumbs.db
 .DS_Store
 
@@ -37,3 +37,6 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# ---- Android build output (rebuilt by scripts/build_apk.sh)
+android_app/build/

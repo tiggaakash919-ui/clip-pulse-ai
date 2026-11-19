@@ -8,7 +8,7 @@ cd "$REPO_ROOT"
 
 echo "Stopping Clip Pulse AI on Phone..."
 
-PID_FILE="$REPO_ROOT/data/peakcut.pid"
+PID_FILE="$REPO_ROOT/data/clippulse.pid"
 if [ -f "$PID_FILE" ]; then
     PID=$(cat "$PID_FILE")
     if [ -n "$PID" ]; then

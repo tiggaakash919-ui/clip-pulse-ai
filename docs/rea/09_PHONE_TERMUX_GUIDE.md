@@ -34,12 +34,12 @@ To run natively in Termux:
 
 When you lock your phone or turn off the screen, Android's battery manager normally suspends app CPU cycles.
 
-Clip Pulse AI's mobile runner ([`scripts/termux/start.sh`](file:///data/user/0/com.termux/files/home/PeakCut/scripts/termux/start.sh)) calls:
+Clip Pulse AI's mobile runner ([`scripts/termux/start.sh`](file:///data/user/0/com.termux/files/home/ClipPulse/scripts/termux/start.sh)) calls:
 ```bash
 termux-wake-lock
 ```
 This tells Android: *"Keep the CPU active in low-power state for background processing."*
-When you press `Ctrl+C` or run [`scripts/termux/stop.sh`](file:///data/user/0/com.termux/files/home/PeakCut/scripts/termux/stop.sh), `termux-wake-unlock` is called, restoring normal battery saving.
+When you press `Ctrl+C` or run [`scripts/termux/stop.sh`](file:///data/user/0/com.termux/files/home/ClipPulse/scripts/termux/stop.sh), `termux-wake-unlock` is called, restoring normal battery saving.
 
 ---
 

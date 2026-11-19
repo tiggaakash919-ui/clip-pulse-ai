@@ -88,7 +88,7 @@ To stop the server and any background FFmpeg capture jobs:
 *Or double-click `scripts\windows\stop.bat`.*
 
 This script:
-1. Reads `data\peakcut.pid` and terminates the main server process.
+1. Reads `data\clippulse.pid` and terminates the main server process.
 2. Ensures all orphaned FFmpeg child processes are cleanly closed.
 3. Restores standard Windows power execution state.
 4. Cleans up temporary lock files.
@@ -114,8 +114,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 **Explanation**: YouTube occasionally blocks IP addresses that send automated extraction requests.
 **Fix**:
 1. Wait 10 minutes (Clip Pulse AI's automated circuit breaker backs off automatically).
-2. Or export cookies from your browser via a Netscape cookies format extension to `data/cookies.txt` and set `PEAKCUT_YTDLP_COOKIES=data/cookies.txt` in `.env`.
+2. Or export cookies from your browser via a Netscape cookies format extension to `data/cookies.txt` and set `CLIPPULSE_YTDLP_COOKIES=data/cookies.txt` in `.env`.
 
 ### Issue 4: Out of Disk Space
 **Symptom**: Recording stops with note `low disk space (... GB free, safety minimum is 5.0 GB)`.
-**Fix**: Clip Pulse AI has a safety circuit breaker that halts capture if free disk space falls below `PEAKCUT_DISK_SAFETY_GB` (default 5.0 GB) to protect your Windows system drive. Free up disk space or change the data folder location in `.env` using `PEAKCUT_DATA=D:\ClipPulseAIData`.
+**Fix**: Clip Pulse AI has a safety circuit breaker that halts capture if free disk space falls below `CLIPPULSE_DISK_SAFETY_GB` (default 5.0 GB) to protect your Windows system drive. Free up disk space or change the data folder location in `.env` using `CLIPPULSE_DATA=D:\ClipPulseAIData`.

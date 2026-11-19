@@ -6,7 +6,7 @@ cd "$REPO_ROOT"
 
 echo "Stopping Clip Pulse AI 24/7 Daemon..."
 
-PID_FILE="$REPO_ROOT/data/peakcut_24_7.pid"
+PID_FILE="$REPO_ROOT/data/clippulse_24_7.pid"
 if [ -f "$PID_FILE" ]; then
     PID=$(cat "$PID_FILE")
     if [ -n "$PID" ]; then

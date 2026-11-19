@@ -7,7 +7,7 @@ LOG_DIR="$REPO_ROOT/data"
 SERVER_LOG="$LOG_DIR/server.log"
 TUNNEL_LOG="$LOG_DIR/tunnel.log"
 URL_FILE="$LOG_DIR/public_url.txt"
-SDCARD_URL="/sdcard/Download/peakcut_online_url.txt"
+SDCARD_URL="/sdcard/Download/clippulse_online_url.txt"
 
 mkdir -p "$LOG_DIR" "$LOG_DIR/bin"
 cd "$REPO_ROOT"
@@ -19,14 +19,14 @@ fi
 
 start_server() {
     echo "[$(date)] Starting Clip Pulse AI backend engine..." >> "$SERVER_LOG"
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cd /root/PeakCut && exec python3 -m studio.server" >> "$SERVER_LOG" 2>&1 &
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cd /root/ClipPulse && exec python3 -m studio.server" >> "$SERVER_LOG" 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > "$LOG_DIR/server.pid"
 }
 
 start_tunnel() {
     echo "[$(date)] Starting Cloudflare global online tunnel..." >> "$TUNNEL_LOG"
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- /root/PeakCut/data/bin/cloudflared tunnel --url http://127.0.0.1:8766 >> "$TUNNEL_LOG" 2>&1 &
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- /root/ClipPulse/data/bin/cloudflared tunnel --url http://127.0.0.1:8766 >> "$TUNNEL_LOG" 2>&1 &
     TUNNEL_PID=$!
     echo $TUNNEL_PID > "$LOG_DIR/tunnel.pid"
 }

@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 PORT=8766
 if [ -f "$REPO_ROOT/.env" ]; then
-    ENV_PORT=$(grep -E "^PEAKCUT_PORT=" "$REPO_ROOT/.env" | cut -d= -f2 | tr -d ' "')
+    ENV_PORT=$(grep -E "^CLIPPULSE_PORT=" "$REPO_ROOT/.env" | cut -d= -f2 | tr -d ' "')
     if [ -n "$ENV_PORT" ]; then
         PORT="$ENV_PORT"
     fi

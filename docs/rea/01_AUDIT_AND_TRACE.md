@@ -1,7 +1,7 @@
-# 01. PeakCut Architecture Audit & End-to-End Pipeline Trace
+# 01. ClipPulse Architecture Audit & End-to-End Pipeline Trace
 
 ## 1. Upstream Repository Overview
-- **Repository**: `https://github.com/haziqahmedqasmi/PeakCut.git`
+- **Repository**: `https://github.com/tiggaakash919-ui/clip-pulse-ai.git`
 - **Inspected Commit SHA**: `b3e403e27444b620a50a4ec1cf44b3afff9e9e45`
 - **Feature Branch**: `rea-live-clipping`
 - **Core Technology Stack**:

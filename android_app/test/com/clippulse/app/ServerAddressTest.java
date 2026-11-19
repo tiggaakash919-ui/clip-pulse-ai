@@ -1,4 +1,4 @@
-package com.peakcut.app;
+package com.clippulse.app;
 
 /** Lightweight host-JVM checks for server URL entry and normalization. */
 public final class ServerAddressTest {

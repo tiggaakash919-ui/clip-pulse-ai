@@ -445,7 +445,7 @@ let signedIn = false;
 $$(".linkform").forEach(f => f.addEventListener("submit", e => {
   e.preventDefault();
   const v = f.link.value.trim();
-  try { if (v) sessionStorage.setItem("peakcut_link", v); } catch {}
+  try { if (v) sessionStorage.setItem("clippulse_link", v); } catch {}
   location.href = signedIn ? "/app" : "/signup";
 }));
 

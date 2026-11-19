@@ -7,7 +7,7 @@ cd "$REPO_ROOT"
 LOG_DIR="$REPO_ROOT/data"
 PID_FILE="$LOG_DIR/supervisor_all.pid"
 URL_FILE="$LOG_DIR/public_url.txt"
-SDCARD_URL="/sdcard/Download/peakcut_online_url.txt"
+SDCARD_URL="/sdcard/Download/clippulse_online_url.txt"
 
 mkdir -p "$LOG_DIR" "$LOG_DIR/bin"
 
@@ -22,7 +22,7 @@ CLOUDFLARED="$LOG_DIR/bin/cloudflared"
 if [ ! -f "$CLOUDFLARED" ]; then
     echo "[INFO] Downloading Cloudflare Tunnel engine..."
     proot-distro login ubuntu -- bash -c "curl -L -s https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /tmp/cloudflared && chmod +x /tmp/cloudflared"
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cp /tmp/cloudflared /root/PeakCut/data/bin/cloudflared && chmod +x /root/PeakCut/data/bin/cloudflared"
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cp /tmp/cloudflared /root/ClipPulse/data/bin/cloudflared && chmod +x /root/ClipPulse/data/bin/cloudflared"
 fi
 
 # Check if supervisor is already running and healthy
@@ -101,7 +101,7 @@ echo "  [3] HOTSPOT (Dusre phone ke liye direct):"
 echo "      👉 http://192.168.43.1:8766/app"
 echo ""
 echo "  [4] ONLINE LINK SAVED AT:"
-echo "      👉 /sdcard/Download/peakcut_online_url.txt"
+echo "      👉 /sdcard/Download/clippulse_online_url.txt"
 echo ""
 echo "  To stop everything:"
 echo "      bash scripts/termux/stop_all.sh"

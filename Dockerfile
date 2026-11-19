@@ -1,4 +1,4 @@
-# PeakCut: one image with the web server, the clip pipeline and ffmpeg.
+# ClipPulse: one image with the web server, the clip pipeline and ffmpeg.
 FROM python:3.11-slim
 
 RUN apt-get update \
@@ -13,10 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY studio studio
 COPY web web
 
-ENV PEAKCUT_DATA=/data \
-    PEAKCUT_HOST=0.0.0.0 \
-    PEAKCUT_PORT=8765 \
-    PEAKCUT_TRUST_PROXY=1 \
+ENV CLIPPULSE_DATA=/data \
+    CLIPPULSE_HOST=0.0.0.0 \
+    CLIPPULSE_PORT=8765 \
+    CLIPPULSE_TRUST_PROXY=1 \
     PYTHONUNBUFFERED=1
 VOLUME /data
 EXPOSE 8765

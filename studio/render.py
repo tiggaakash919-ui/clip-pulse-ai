@@ -275,6 +275,9 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
 
 def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str) -> dict:
     global _qsv_ok
+    # ffmpeg runs inside the short work folder, so a data folder given as a relative path (the phone's
+    # CLIPPULSE_DATA=data) would otherwise be looked for there and "source.mp4" would not be found.
+    src, out_dir = Path(src).resolve(), Path(out_dir).resolve()
     (work / f"{name}.ass").write_text(ass, encoding="utf-8")
     (work / "f").mkdir()
     for f in config.FONTS_DIR.glob("*.ttf"):

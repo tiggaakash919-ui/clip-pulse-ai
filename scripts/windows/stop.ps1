@@ -8,7 +8,7 @@ Set-Location $RepoRoot
 
 Write-Host "Stopping Clip Pulse AI..." -ForegroundColor Yellow
 
-$PidFile = Join-Path $RepoRoot "data\peakcut.pid"
+$PidFile = Join-Path $RepoRoot "data\clippulse.pid"
 if (Test-Path $PidFile) {
     $procId = Get-Content $PidFile
     if ($procId) {
@@ -29,7 +29,7 @@ try {
     $Win32Sleep = Add-Type -MemberDefinition @"
 [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 public static extern uint SetThreadExecutionState(uint esFlags);
-"@ -Name "Win32SleepReset" -Namespace "PeakCutStop" -PassThru -ErrorAction SilentlyContinue
+"@ -Name "Win32SleepReset" -Namespace "ClipPulseStop" -PassThru -ErrorAction SilentlyContinue
 
     $ES_CONTINUOUS = [uint32]0x80000000L
     $Win32Sleep::SetThreadExecutionState($ES_CONTINUOUS) | Out-Null

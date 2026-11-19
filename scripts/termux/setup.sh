@@ -42,22 +42,22 @@ ENV_FILE="$REPO_ROOT/.env"
 if [ ! -f "$ENV_FILE" ]; then
     cat << 'EOF' > "$ENV_FILE"
 # Clip Pulse AI Mobile (Phone / Termux) Settings
-PEAKCUT_HOST=0.0.0.0
-PEAKCUT_PORT=8766
-PEAKCUT_DATA=data
+CLIPPULSE_HOST=0.0.0.0
+CLIPPULSE_PORT=8766
+CLIPPULSE_DATA=data
 
 # Multilingual Speech Model for Phone (Whisper Tiny or Base)
-PEAKCUT_ASR_FAMILY=whisper
-PEAKCUT_MODEL=sherpa-onnx-whisper-tiny
-PEAKCUT_ASR_LANGUAGE=hi
+CLIPPULSE_ASR_FAMILY=whisper
+CLIPPULSE_MODEL=sherpa-onnx-whisper-tiny
+CLIPPULSE_ASR_LANGUAGE=hi
 
 # Mobile Performance Settings
 # 720x1280 vertical is 2.5x faster to render on mobile CPU than 1080x1920
-PEAKCUT_OUT_W=720
-PEAKCUT_OUT_H=1280
+CLIPPULSE_OUT_W=720
+CLIPPULSE_OUT_H=1280
 
 # Safety threshold (GB free space required before halting capture)
-PEAKCUT_DISK_SAFETY_GB=3.0
+CLIPPULSE_DISK_SAFETY_GB=3.0
 EOF
     echo "[OK] Created mobile-optimized .env configuration file."
 else

@@ -58,7 +58,7 @@ OK
 ### 1. YouTube Bot Check / IP Rate Limiting (HTTP 429)
 - **Condition**: YouTube occasionally flags automated stream extraction requests.
 - **System Behavior**: Clip Pulse AI detects bot challenge strings via `media._BOT_CHECK`, sets a 10-minute exponential backoff circuit breaker (`YT_PAUSE = 600`), and halts unnecessary aggressive retries.
-- **Remedy**: Export clean session cookies into `data/cookies.txt` and set `PEAKCUT_YTDLP_COOKIES=data/cookies.txt`.
+- **Remedy**: Export clean session cookies into `data/cookies.txt` and set `CLIPPULSE_YTDLP_COOKIES=data/cookies.txt`.
 
 ### 2. Stream Inactive / Scheduled Upcoming
 - **Condition**: User inputs a stream URL before the broadcaster goes live.
@@ -70,7 +70,7 @@ OK
 
 ### 4. Disk Space Exhaustion
 - **Condition**: 24/7 continuous stream recording fills the target storage drive.
-- **System Behavior**: Checked at every 6-second segment ingest loop. If available free storage falls below `PEAKCUT_DISK_SAFETY_GB` (default 5.0 GB), capture halts immediately with an observable error stage message, protecting system stability.
+- **System Behavior**: Checked at every 6-second segment ingest loop. If available free storage falls below `CLIPPULSE_DISK_SAFETY_GB` (default 5.0 GB), capture halts immediately with an observable error stage message, protecting system stability.
 
 ### 5. Virality & Moment Selection
 - **Condition**: Stream contains extended periods of quiet or uninteresting content.

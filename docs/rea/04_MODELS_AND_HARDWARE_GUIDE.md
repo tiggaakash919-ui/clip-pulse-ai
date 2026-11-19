@@ -2,7 +2,7 @@
 
 ## 1. Upstream Default vs. Multilingual Whisper Comparison
 
-Upstream PeakCut ships with `sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8`, an English-only Conformer Transducer model. While fast for pure English, it cannot transcribe Hindi, Hinglish, or Devanagari script.
+Upstream ClipPulse ships with `sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8`, an English-only Conformer Transducer model. While fast for pure English, it cannot transcribe Hindi, Hinglish, or Devanagari script.
 
 To support Hindi, Hinglish (code-switching), and mixed Indian streaming content, Clip Pulse AI's REA pipeline introduces support for **sherpa-onnx Whisper ONNX** models.
 
@@ -51,13 +51,13 @@ To select a different model, update your `.env` file before starting the applica
 
 ```bash
 # Model family: "whisper" or "transducer"
-PEAKCUT_ASR_FAMILY=whisper
+CLIPPULSE_ASR_FAMILY=whisper
 
 # Pretrained model identifier
-PEAKCUT_MODEL=sherpa-onnx-whisper-base
+CLIPPULSE_MODEL=sherpa-onnx-whisper-base
 
 # Recognition language: "hi" for Hindi, "en" for English, or "auto"
-PEAKCUT_ASR_LANGUAGE=hi
+CLIPPULSE_ASR_LANGUAGE=hi
 ```
 
 To pre-download the model files:

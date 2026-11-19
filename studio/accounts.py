@@ -69,8 +69,8 @@ def _write(name, data):
 # ------------------------------------------------------------------ the server's apps with each platform
 # name -> (what the platform calls the id, what it calls the secret, .env names for both)
 APPS = {"google": ("Client ID", "Client secret", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"),
-        "instagram": ("Instagram app ID", "Instagram app secret", "PEAKCUT_IG_APP_ID", "PEAKCUT_IG_APP_SECRET"),
-        "tiktok": ("Client key", "Client secret", "PEAKCUT_TIKTOK_CLIENT_KEY", "PEAKCUT_TIKTOK_CLIENT_SECRET")}
+        "instagram": ("Instagram app ID", "Instagram app secret", "CLIPPULSE_IG_APP_ID", "CLIPPULSE_IG_APP_SECRET"),
+        "tiktok": ("Client key", "Client secret", "CLIPPULSE_TIKTOK_CLIENT_KEY", "CLIPPULSE_TIKTOK_CLIENT_SECRET")}
 APP_FOR = {"youtube": "google", "instagram": "instagram", "tiktok": "tiktok"}
 _apps_seen = {"at": None, "data": {}}
 

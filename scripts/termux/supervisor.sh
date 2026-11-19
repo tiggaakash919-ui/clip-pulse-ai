@@ -9,7 +9,7 @@ cd "$REPO_ROOT"
 
 while true; do
     echo "[$(date)] Starting Clip Pulse AI server..." >> "$LOG_FILE"
-    proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cd /root/PeakCut && python3 -m studio.server" >> "$LOG_FILE" 2>&1
+    proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cd /root/ClipPulse && python3 -m studio.server" >> "$LOG_FILE" 2>&1
     EXIT_CODE=$?
     echo "[$(date)] Server exited with code $EXIT_CODE. Restarting in 2 seconds..." >> "$LOG_FILE"
     sleep 2

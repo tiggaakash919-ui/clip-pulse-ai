@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 from . import config, db
 
-COOKIE = "peakcut_session"
+COOKIE = "clippulse_session"
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,180}\.[A-Za-z]{2,24}$")
 _SCRYPT = {"n": 2 ** 15, "r": 8, "p": 1}
 _states: dict = {}            # one-time values for the Google redirect: state -> (created, next path)

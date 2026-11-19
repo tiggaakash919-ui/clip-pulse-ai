@@ -52,7 +52,7 @@ BOOT = f"{int(time.time()) % 100000:x}"     # part of every sync token, so pages
 @app.on_event("startup")
 async def _more_threads():
     import anyio.to_thread
-    anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("PEAKCUT_REQUEST_THREADS", "64"))
+    anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("CLIPPULSE_REQUEST_THREADS", "64"))
 
 
 @app.on_event("startup")
@@ -66,7 +66,7 @@ def _startup():
     render.install_fonts()
     if _tools.missing():
         print("\n  " + _tools.HELP + "\n", flush=True)
-    if not transcribe.REMOTE and config.env("PEAKCUT_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
+    if not transcribe.REMOTE and config.env("CLIPPULSE_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
         from . import fetch_model
         threading.Thread(target=lambda: _quiet(fetch_model.ensure), daemon=True).start()
     jobs.start()
@@ -227,7 +227,7 @@ class Compress:
 app.add_middleware(Compress)
 
 
-# Cloudflare's published address ranges (cloudflare.com/ips). PEAKCUT_CDN_RANGES replaces them if they ever change.
+# Cloudflare's published address ranges (cloudflare.com/ips). CLIPPULSE_CDN_RANGES replaces them if they ever change.
 _CDN_RANGES = None
 
 
@@ -235,7 +235,7 @@ def _from_cdn(addr: str) -> bool:
     global _CDN_RANGES
     import ipaddress
     if _CDN_RANGES is None:
-        ranges = config.env("PEAKCUT_CDN_RANGES") or (
+        ranges = config.env("CLIPPULSE_CDN_RANGES") or (
             "173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 "
             "190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 "
             "104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 "
@@ -250,12 +250,12 @@ def _from_cdn(addr: str) -> bool:
 
 def _ip(request: Request) -> str:
     """The visitor's address, used for rate limits. The connection's own address, or the one the proxy in front
-    reports (PEAKCUT_TRUST_PROXY). If that connection comes from the CDN, the CDN's header names the real visitor
-    (PEAKCUT_CLIENT_IP_HEADER). The header is believed only when the CDN really sent the request, so nobody can
+    reports (CLIPPULSE_TRUST_PROXY). If that connection comes from the CDN, the CDN's header names the real visitor
+    (CLIPPULSE_CLIENT_IP_HEADER). The header is believed only when the CDN really sent the request, so nobody can
     pick their own address by sending it themselves."""
     fwd = request.headers.get("x-forwarded-for", "")
-    peer = (fwd.split(",")[0].strip() if fwd and config.env("PEAKCUT_TRUST_PROXY") else "") or (request.client.host if request.client else "")
-    named = config.env("PEAKCUT_CLIENT_IP_HEADER")
+    peer = (fwd.split(",")[0].strip() if fwd and config.env("CLIPPULSE_TRUST_PROXY") else "") or (request.client.host if request.client else "")
+    named = config.env("CLIPPULSE_CLIENT_IP_HEADER")
     if named and request.headers.get(named) and _from_cdn(peer):
         return request.headers[named].split(",")[0].strip()[:64]
     return peer
@@ -278,7 +278,7 @@ def _from_here(req, must_say=False) -> bool:
 
 def _own_address(host: str) -> bool:
     """Is this the address Clip Pulse AI is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
-    host in PEAKCUT_PUBLIC_URL."""
+    host in CLIPPULSE_PUBLIC_URL."""
     import ipaddress
     name = host.strip().lower()
     name = name[1:name.index("]")] if name.startswith("[") and "]" in name else name.rsplit(":", 1)[0] if ":" in name else name
@@ -1015,7 +1015,7 @@ def clips_zip(ids: str = ""):
     except ValueError as e:
         raise HTTPException(400, str(e))
     from starlette.background import BackgroundTask
-    return FileResponse(f, filename=f"peakcut-clips-{len(pairs)}.zip", media_type="application/zip",
+    return FileResponse(f, filename=f"clippulse-clips-{len(pairs)}.zip", media_type="application/zip",
                         headers={"Cache-Control": "private, no-store"}, background=BackgroundTask(lambda: f.unlink(missing_ok=True)))
 
 
@@ -1093,7 +1093,7 @@ def test_email(request: Request):
     from . import mailer
     me_ = _admin(request)
     if not mailer.ready():
-        raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings to .env first.")
+        raise HTTPException(400, "No email service is set up yet. Add the CLIPPULSE_SMTP settings to .env first.")
     mailer.send(me_.email, "Clip Pulse AI test email", "Your emails are working",
                 "This is a test from your Clip Pulse AI server. Account emails like this one will now reach people.",
                 "Open Clip Pulse AI", config.PUBLIC_URL + "/app", "You can ignore this message.")
@@ -1493,7 +1493,7 @@ def public_clip(token: str):
 def _on_this_computer(request: Request) -> bool:
     """Is the person sitting at the computer Clip Pulse AI runs on? Only then can a folder window be opened for them."""
     host = request.client.host if request.client else ""
-    return host in ("127.0.0.1", "::1", "localhost") and not config.env("PEAKCUT_TRUST_PROXY")
+    return host in ("127.0.0.1", "::1", "localhost") and not config.env("CLIPPULSE_TRUST_PROXY")
 
 
 @app.get("/api/storage")
@@ -1649,15 +1649,15 @@ def main():
     print(f"\n  Clip Pulse AI is running:  {config.PUBLIC_URL}\n")
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
         print("  Sign-in is off, so anyone who can reach this address can use Clip Pulse AI and its AI key.\n"
-              "  On a server other people can reach, set PEAKCUT_ACCOUNTS=1 in .env.\n", flush=True)
-    if config.env("PEAKCUT_AUTO_RELOAD") == "1":
+              "  On a server other people can reach, set CLIPPULSE_ACCOUNTS=1 in .env.\n", flush=True)
+    if config.env("CLIPPULSE_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)
         uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="warning", backlog=4096, reload=True,
                     reload_dirs=[str(config.ROOT / "studio")], reload_includes=["*.py"],
-                    proxy_headers=bool(config.env("PEAKCUT_TRUST_PROXY")), forwarded_allow_ips="*")
+                    proxy_headers=bool(config.env("CLIPPULSE_TRUST_PROXY")), forwarded_allow_ips="*")
         return
     uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="warning", backlog=4096,
-                proxy_headers=bool(config.env("PEAKCUT_TRUST_PROXY")), forwarded_allow_ips="*")
+                proxy_headers=bool(config.env("CLIPPULSE_TRUST_PROXY")), forwarded_allow_ips="*")
 
 
 if __name__ == "__main__":

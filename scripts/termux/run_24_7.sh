@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 mkdir -p "$REPO_ROOT/data"
-PID_FILE="$REPO_ROOT/data/peakcut_24_7.pid"
+PID_FILE="$REPO_ROOT/data/clippulse_24_7.pid"
 LOG_FILE="$REPO_ROOT/data/server.log"
 
 # Acquire Termux wakelock so CPU never sleeps

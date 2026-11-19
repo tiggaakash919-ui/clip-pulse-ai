@@ -23,8 +23,8 @@ def _places() -> list:
     root = Path(__file__).resolve().parent.parent
     out = [root / "ffmpeg" / "bin", root / "bin", root]
     env = os.environ.get
-    if env("PEAKCUT_FFMPEG_DIR"):                    # the folder that holds ffmpeg, if it lives somewhere unusual
-        out.insert(0, Path(env("PEAKCUT_FFMPEG_DIR")))
+    if env("CLIPPULSE_FFMPEG_DIR"):                    # the folder that holds ffmpeg, if it lives somewhere unusual
+        out.insert(0, Path(env("CLIPPULSE_FFMPEG_DIR")))
     if sys.platform == "win32":
         local = Path(env("LOCALAPPDATA") or "")
         if str(local) not in ("", "."):

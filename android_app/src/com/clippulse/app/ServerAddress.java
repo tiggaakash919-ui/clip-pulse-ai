@@ -1,4 +1,4 @@
-package com.peakcut.app;
+package com.clippulse.app;
 
 import java.net.URI;
 import java.net.URISyntaxException;

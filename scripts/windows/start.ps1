@@ -28,7 +28,7 @@ try {
     $Win32Sleep = Add-Type -MemberDefinition @"
 [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 public static extern uint SetThreadExecutionState(uint esFlags);
-"@ -Name "Win32SleepState" -Namespace "PeakCut" -PassThru -ErrorAction SilentlyContinue
+"@ -Name "Win32SleepState" -Namespace "ClipPulse" -PassThru -ErrorAction SilentlyContinue
 
     Write-Host "==========================================================" -ForegroundColor Cyan
     Write-Host "  Starting Clip Pulse AI Local Studio (24/7 Capture Ready)     " -ForegroundColor Cyan
@@ -47,7 +47,7 @@ $DataDir = Join-Path $RepoRoot "data"
 if (-not (Test-Path $DataDir)) {
     New-Item -ItemType Directory -Path $DataDir -Force | Out-Null
 }
-$PidFile = Join-Path $DataDir "peakcut.pid"
+$PidFile = Join-Path $DataDir "clippulse.pid"
 
 # Cleanup on exit
 $cleanupBlock = {

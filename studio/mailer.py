@@ -1,8 +1,8 @@
 """Sending account emails (verify your address, reset your password) over SMTP.
 
 Works with any provider that offers SMTP: Resend, Postmark, Brevo, Amazon SES, Google Workspace and so on. Set
-PEAKCUT_SMTP_HOST, PEAKCUT_SMTP_PORT (587), PEAKCUT_SMTP_USER, PEAKCUT_SMTP_PASSWORD_FILE (a file holding the
-password or API key) and PEAKCUT_MAIL_FROM ("Clip Pulse AI <hello@yourdomain.com>"). Without them nothing is sent and the
+CLIPPULSE_SMTP_HOST, CLIPPULSE_SMTP_PORT (587), CLIPPULSE_SMTP_USER, CLIPPULSE_SMTP_PASSWORD_FILE (a file holding the
+password or API key) and CLIPPULSE_MAIL_FROM ("Clip Pulse AI <hello@yourdomain.com>"). Without them nothing is sent and the
 link is written to the server log instead, which is enough for running Clip Pulse AI on your own machine."""
 import html
 import logging
@@ -14,7 +14,7 @@ from email.utils import formataddr, make_msgid, parseaddr
 
 from . import config
 
-log = logging.getLogger("peakcut.mail")
+log = logging.getLogger("clippulse.mail")
 
 
 def ready() -> bool:
@@ -22,7 +22,7 @@ def ready() -> bool:
 
 
 LOGO = config.ROOT / "web" / "brand" / "logo-email.png"   # PNG: email apps don't show SVG
-LOGO_CID = "peakcut-logo"
+LOGO_CID = "clippulse-logo"
 
 
 def _html(title: str, intro: str, button: str, link: str, outro: str, logo_src: str = "cid:" + LOGO_CID) -> str:

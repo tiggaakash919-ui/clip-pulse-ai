@@ -5,9 +5,9 @@ import os
 import sys
 import tempfile
 
-os.environ["PEAKCUT_DATA"] = tempfile.mkdtemp(prefix="pc-ai-")
+os.environ["CLIPPULSE_DATA"] = tempfile.mkdtemp(prefix="pc-ai-")
 os.environ["DATABASE_URL"] = ""
-os.environ.update(PEAKCUT_AI_PROVIDER="gemini", PEAKCUT_AI_MODELS="model-a, model-b", PEAKCUT_AI_KEY="test-key-123456", PEAKCUT_AI_BASE_URL="")
+os.environ.update(CLIPPULSE_AI_PROVIDER="gemini", CLIPPULSE_AI_MODELS="model-a, model-b", CLIPPULSE_AI_KEY="test-key-123456", CLIPPULSE_AI_BASE_URL="")
 sys.path.insert(0, ".")
 from studio import ai, auth, brain, config, ctx, db, usage  # noqa: E402
 
@@ -88,14 +88,14 @@ check("custom without an address is not ready", not ai.ready())
 use("nonsense")
 check("an unknown provider is not ready", not ai.ready())
 use("ollama")
-os.environ["PEAKCUT_AI_KEY"] = ""
+os.environ["CLIPPULSE_AI_KEY"] = ""
 config._kept.clear()
 check("ollama needs no key", ai.ready() and ai.label().startswith("Ollama"))
 out, _s, _w = ai.call("model-a", "hello", brain.SCHEMA)
 check("ollama: no key header is sent", "Authorization" not in seen[0][2] and out == [CLIP])
 use("gemini")
 check("gemini without a key is not ready", not ai.ready())
-os.environ["PEAKCUT_AI_KEY"] = "test-key-123456"
+os.environ["CLIPPULSE_AI_KEY"] = "test-key-123456"
 config._kept.clear()
 
 # ---- the whole path: a call is made for a user and shows up in their usage, and only theirs
@@ -116,5 +116,5 @@ with ctx.as_user(u2.id):
 print("ALL PASSED" if not fails else f"{len(fails)} failed")
 import shutil  # noqa: E402
 db.engine.dispose()
-shutil.rmtree(os.environ["PEAKCUT_DATA"], ignore_errors=True)
+shutil.rmtree(os.environ["CLIPPULSE_DATA"], ignore_errors=True)
 sys.exit(1 if fails else 0)

@@ -6,9 +6,9 @@ This guide documents the native Android App built for Clip Pulse AI.
 
 ## 1. APK Location & Specifications
 
-- **File Path**: `/sdcard/Download/PeakCut.apk` (Download folder)
-- **Local Copy**: `/data/user/0/com.termux/files/home/PeakCut/data/PeakCut.apk`
-- **Package Name**: `com.peakcut.app`
+- **File Path**: `/sdcard/Download/ClipPulseAI.apk` (Download folder)
+- **Local Copy**: `/data/user/0/com.termux/files/home/ClipPulse/data/ClipPulseAI.apk`
+- **Package Name**: `com.clippulse.app`
 - **Application Label**: `Clip Pulse AI`
 - **Minimum Android Version**: Android 7.0 (API Level 24)
 - **Target Android Version**: Android 14+ (API Level 34)
@@ -39,4 +39,4 @@ If you make any changes to the Android app layout or code, rebuild it with a sin
 ```bash
 bash scripts/build_apk.sh
 ```
-This automatically compiles resources, compiles Java sources, runs D8 bytecode dexing, zipaligns, signs with `apksigner`, and copies the fresh APK to `/sdcard/Download/PeakCut.apk`.
+This automatically compiles resources, compiles Java sources, runs D8 bytecode dexing, zipaligns, signs with `apksigner`, and copies the fresh APK to `/sdcard/Download/ClipPulseAI.apk`.

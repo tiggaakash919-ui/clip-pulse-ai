@@ -301,7 +301,7 @@ class TestAndroidApp(unittest.TestCase):
         self.assertTrue(script.exists())
 
     def test_built_apk_exists_and_valid(self):
-        apk_path = REPO_ROOT / "data" / "PeakCut.apk"
+        apk_path = REPO_ROOT / "data" / "ClipPulseAI.apk"
         self.assertTrue(apk_path.exists())
         self.assertGreater(apk_path.stat().st_size, 10000)
 

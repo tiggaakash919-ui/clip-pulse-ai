@@ -4,7 +4,7 @@ cd /d "%~dp0"
 title Clip Pulse AI Launcher
 set PORT=8765
 set "VPY=.venv\Scripts\python.exe"
-if /i "%~1"=="online" set PEAKCUT_ACCOUNTS=1
+if /i "%~1"=="online" set CLIPPULSE_ACCOUNTS=1
 
 rem ---- Add local data\bin to PATH if present (e.g. ffmpeg/cloudflared)
 if exist "%~dp0data\bin" set "PATH=%~dp0data\bin;%PATH%"
