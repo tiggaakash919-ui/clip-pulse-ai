@@ -81,3 +81,10 @@ if [ -d "/sdcard/Download" ]; then
 else
     echo "[WARNING] /sdcard/Download not accessible. Saved to $REPO_ROOT/data/ClipPulseAI.apk"
 fi
+
+# A second copy for the folder where installers are kept, so the latest APK is easy to find.
+APK_FOLDER="/sdcard/APKs"
+if mkdir -p "$APK_FOLDER" 2>/dev/null; then
+    cp -f "$REPO_ROOT/data/ClipPulseAI.apk" "$APK_FOLDER/ClipPulseAI.apk"
+    echo "  Copy for sharing: $APK_FOLDER/ClipPulseAI.apk"
+fi
