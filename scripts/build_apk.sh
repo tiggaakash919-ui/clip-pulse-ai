@@ -69,22 +69,16 @@ cp -f build/ClipPulseAI.apk /root/ClipPulse/data/ClipPulseAI.apk
 echo "[SUCCESS] Clip Pulse AI APK built and verified successfully!"
 '
 
-# Copy final APK to user download folder
+# Copies of the final APK, so it is easy to find.
+for DIR in "/sdcard/Download" "/sdcard/APKs" "/sdcard/Installers" "$REPO_ROOT/apk"; do
+    mkdir -p "$DIR" 2>/dev/null && cp -f "$REPO_ROOT/data/ClipPulseAI.apk" "$DIR/ClipPulseAI.apk"
+done
 TARGET_APK="/sdcard/Download/ClipPulseAI.apk"
 if [ -d "/sdcard/Download" ]; then
-    cp -f "$REPO_ROOT/data/ClipPulseAI.apk" "$TARGET_APK"
     echo "=========================================================="
     echo "  APK SUCCESSFULLY PLACED IN DOWNLOAD FOLDER!            "
     echo "  Location: $TARGET_APK"
     echo "  Size: $(stat -c %s "$TARGET_APK" 2>/dev/null || echo '?') bytes"
+    echo "  Other copies: /sdcard/APKs, /sdcard/Installers, $REPO_ROOT/apk"
     echo "=========================================================="
-else
-    echo "[WARNING] /sdcard/Download not accessible. Saved to $REPO_ROOT/data/ClipPulseAI.apk"
-fi
-
-# A second copy for the folder where installers are kept, so the latest APK is easy to find.
-APK_FOLDER="/sdcard/APKs"
-if mkdir -p "$APK_FOLDER" 2>/dev/null; then
-    cp -f "$REPO_ROOT/data/ClipPulseAI.apk" "$APK_FOLDER/ClipPulseAI.apk"
-    echo "  Copy for sharing: $APK_FOLDER/ClipPulseAI.apk"
 fi

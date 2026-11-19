@@ -8,6 +8,8 @@ secrets/
 *service-account*.json
 *client_secret*.json
 data/
+apk/
+# the built ClipPulseAI.apk; copies are in /sdcard/Download, /sdcard/APKs and /sdcard/Installers
 storage.json
 *.db
 *.db-wal
