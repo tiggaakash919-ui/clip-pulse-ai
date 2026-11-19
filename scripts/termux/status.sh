@@ -1,10 +1,10 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut 24/7 Status Monitor
+# Clip Pulse AI 24/7 Status Monitor
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 echo "=========================================================="
-echo "               PEAKCUT 24/7 LIVE STATUS                   "
+echo "               CLIP PULSE AI 24/7 LIVE STATUS                   "
 echo "=========================================================="
 
 # Check Server

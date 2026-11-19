@@ -1,12 +1,12 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Android/Termux Stop Script
+# Clip Pulse AI Android/Termux Stop Script
 # Cleanly terminates server and releases Termux wake-lock
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "Stopping PeakCut on Phone..."
+echo "Stopping Clip Pulse AI on Phone..."
 
 PID_FILE="$REPO_ROOT/data/peakcut.pid"
 if [ -f "$PID_FILE" ]; then
@@ -27,4 +27,4 @@ if command -v termux-wake-unlock >/dev/null 2>&1; then
     echo "Released Termux Wake-Lock."
 fi
 
-echo "PeakCut stopped."
+echo "Clip Pulse AI stopped."

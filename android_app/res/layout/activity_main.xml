@@ -75,7 +75,7 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- PeakCut Web View -->
+        <!-- Clip Pulse AI web view -->
         <WebView
             android:id="@+id/webView"
             android:layout_width="match_parent"
@@ -100,7 +100,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PeakCut Engine Offline"
+                    android:text="Clip Pulse AI engine offline"
                     android:textColor="@color/brand"
                     android:textSize="22sp"
                     android:textStyle="bold"

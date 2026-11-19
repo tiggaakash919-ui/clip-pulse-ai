@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Network IP & Dusra Phone Connection Guide
+# Clip Pulse AI Network IP & Dusra Phone Connection Guide
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -46,13 +46,13 @@ for ip in ips:
 HOTSPOT_IP="192.168.43.1"
 
 echo "=========================================================="
-echo "      PEAKCUT - DUSRE PHONE SE CONNECT KARNE KA GUIDE     "
+echo "      CLIP PULSE AI - DUSRE PHONE SE CONNECT KARNE KA GUIDE"
 echo "=========================================================="
 echo ""
 echo "  [METHOD 1] MOBILE HOTSPOT (SABSE SARAL & FASTEST):"
 echo "  1. Is phone (Phone 1) ka Mobile Hotspot ON karein."
 echo "  2. Dusre phone me Wi-Fi kholkar is Hotspot se connect karein."
-echo "  3. Dusre phone ke PeakCut App me tap karein:"
+echo "  3. Dusre phone ke Clip Pulse AI App me tap karein:"
 echo "     👉 'Connect via Hotspot (192.168.43.1)'"
 echo "     (Ya kisi bhi browser me kholein: http://$HOTSPOT_IP:$PORT/app)"
 echo ""
@@ -67,7 +67,7 @@ else
 fi
 echo ""
 echo "  [METHOD 3] AUTO-SCAN (NO CONFIG):"
-echo "  Dusre phone me PeakCut app kholkar simply tap karein:"
+echo "  Dusre phone me Clip Pulse AI app kholkar simply tap karein:"
 echo "     👉 'Auto-Scan Wi-Fi Network'"
 echo "  App khud Phone 1 ko dhundh kar connect kar legi!"
 echo "=========================================================="

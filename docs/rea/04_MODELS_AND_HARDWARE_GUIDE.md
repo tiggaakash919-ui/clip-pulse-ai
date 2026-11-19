@@ -4,7 +4,7 @@
 
 Upstream PeakCut ships with `sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8`, an English-only Conformer Transducer model. While fast for pure English, it cannot transcribe Hindi, Hinglish, or Devanagari script.
 
-To support Hindi, Hinglish (code-switching), and mixed Indian streaming content, PeakCut's REA pipeline introduces support for **sherpa-onnx Whisper ONNX** models.
+To support Hindi, Hinglish (code-switching), and mixed Indian streaming content, Clip Pulse AI's REA pipeline introduces support for **sherpa-onnx Whisper ONNX** models.
 
 | Speech Model | Architecture | Size | Language Support | Hindi & Hinglish Quality | Word Timestamps | Recommended Hardware |
 |---|---|---|---|---|---|---|

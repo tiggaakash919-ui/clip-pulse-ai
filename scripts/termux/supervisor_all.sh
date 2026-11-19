@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut 24/7 Unified Self-Healing Supervisor Loop
+# Clip Pulse AI 24/7 Unified Self-Healing Supervisor Loop
 trap '' HUP
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -18,7 +18,7 @@ if command -v termux-wake-lock >/dev/null 2>&1; then
 fi
 
 start_server() {
-    echo "[$(date)] Starting PeakCut backend engine..." >> "$SERVER_LOG"
+    echo "[$(date)] Starting Clip Pulse AI backend engine..." >> "$SERVER_LOG"
     proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cd /root/PeakCut && exec python3 -m studio.server" >> "$SERVER_LOG" 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > "$LOG_DIR/server.pid"
@@ -33,9 +33,9 @@ start_tunnel() {
 
 # Main self-healing supervisor loop
 while true; do
-    # 1. Check PeakCut Server
+    # 1. Check Clip Pulse AI Server
     if ! curl -s --connect-timeout 2 http://127.0.0.1:8766/api/system/preflight >/dev/null 2>&1; then
-        echo "[$(date)] PeakCut backend is not responding. Starting..." >> "$SERVER_LOG"
+        echo "[$(date)] Clip Pulse AI backend is not responding. Starting..." >> "$SERVER_LOG"
         pkill -9 -f "studio.server" 2>/dev/null || true
         start_server
         sleep 4
@@ -57,7 +57,7 @@ while true; do
             if [ -d "/sdcard/Download" ]; then
                 {
                     echo "=========================================================="
-                    echo "PEAKCUT 24/7 LIVE ONLINE LINK (Apne dost ke sath share karein):"
+                    echo "CLIP PULSE AI 24/7 LIVE ONLINE LINK (Apne dost ke sath share karein):"
                     echo "$CURRENT_APP_URL"
                     echo ""
                     echo "Local Address (Phone 1):   http://127.0.0.1:8766/app"

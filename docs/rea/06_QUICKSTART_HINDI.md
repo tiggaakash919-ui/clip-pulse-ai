@@ -1,6 +1,6 @@
 # 06. Quick-Start Guide (Roman Hindi / Hinglish)
 
-Namaste! Ye guide aapko PeakCut ko apne Windows PC par bina kisi technical jhanjhat ke chalane aur 24/7 continuous YouTube livestream se automatic viral clips nikalne ka aasan tarika batati hai.
+Namaste! Ye guide aapko Clip Pulse AI ko apne Windows PC par bina kisi technical jhanjhat ke chalane aur 24/7 continuous YouTube livestream se automatic viral clips nikalne ka aasan tarika batati hai.
 
 ---
 
@@ -16,7 +16,7 @@ Aapke PC me ye 3 cheezein honi chahiye:
 
 ## 2. 1-Click Setup (Pehli Baar)
 
-1. PeakCut folder kholein.
+1. Clip Pulse AI folder kholein.
 2. `scripts\windows\setup.bat` par **double-click** karein.
 3. Ye script khud-b-khud:
    - Sabhi zaroori packages install karega.
@@ -26,7 +26,7 @@ Aapke PC me ye 3 cheezein honi chahiye:
 
 ---
 
-## 3. PeakCut Start Kaise Karein (24/7 Mode)
+## 3. Clip Pulse AI Start Kaise Karein (24/7 Mode)
 
 1. `scripts\windows\start.bat` par **double-click** karein.
 2. Ek black window khulegi aur aapka browser automatically **http://127.0.0.1:8765** par open ho jayega.
@@ -36,7 +36,7 @@ Aapke PC me ye 3 cheezein honi chahiye:
 
 ## 4. Live Stream Link Daal Kar Clips Banana
 
-1. Browser me PeakCut dashboard kholein (`http://127.0.0.1:8765`).
+1. Browser me Clip Pulse AI dashboard kholein (`http://127.0.0.1:8765`).
 2. **"Paste video or stream link"** box me apna authorized YouTube livestream link paste karein (jaise: `https://youtube.com/watch?v=...` ya `https://youtube.com/@ChannelName`).
 3. Stream ka category chunein:
    - **Gaming** (Loud scream, clutch moment, rage)
@@ -55,7 +55,7 @@ Aapke PC me ye 3 cheezein honi chahiye:
 - **Dashboard me**: Naye bane clips card ban kar samne aate rahenge. Har clip me moment ka score (0-100), hook title, aur transcript likha hoga.
 - **Aapke Computer me**: Sabhi final ready clips automatically is folder me save hoti hain:
   ```
-  PeakCut\data\exported_clips\
+  data\exported_clips\ (Clip Pulse AI project folder ke andar)
   ```
   Aap direct in `.mp4` videos ko drag-and-drop karke YouTube Shorts ya Instagram Reels par upload kar sakte hain!
 
@@ -72,6 +72,6 @@ Aapke PC me ye 3 cheezein honi chahiye:
 
 ## 7. Zaroori Baatein (Tips)
 
-1. **Internet Disconnect**: Agar internet 1-2 minute ke liye chala jata hai, to pareshan na hon. PeakCut automatically 15 baar retry karega aur wapas connect ho jayega.
+1. **Internet Disconnect**: Agar internet 1-2 minute ke liye chala jata hai, to pareshan na hon. Clip Pulse AI automatically 15 baar retry karega aur wapas connect ho jayega.
 2. **Quality Over Quantity**: Agar stream me kuch interesting nahi ho raha (silent hai ya boring gameplay chal raha hai), to system zabardasti kachra clips nahi banayega. Sirf genuine energetic moments hi clip honge!
-3. **Disk Space Safety**: Agar aapki C-Drive me 5 GB se kam space bachega, to PeakCut aapke PC ko crash hone se bachane ke liye khud hi recording rok dega.
+3. **Disk Space Safety**: Agar aapki C-Drive me 5 GB se kam space bachega, to Clip Pulse AI aapke PC ko crash hone se bachane ke liye khud hi recording rok dega.

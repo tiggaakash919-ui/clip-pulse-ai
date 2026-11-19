@@ -1,4 +1,4 @@
-# PowerShell Start Script for PeakCut (with Windows 24/7 Sleep Prevention)
+# PowerShell Start Script for Clip Pulse AI (with Windows 24/7 Sleep Prevention)
 # Runs the local server and manages execution state.
 
 $ErrorActionPreference = "Stop"
@@ -31,15 +31,15 @@ public static extern uint SetThreadExecutionState(uint esFlags);
 "@ -Name "Win32SleepState" -Namespace "PeakCut" -PassThru -ErrorAction SilentlyContinue
 
     Write-Host "==========================================================" -ForegroundColor Cyan
-    Write-Host "  Starting PeakCut Local Studio (24/7 Capture Ready)     " -ForegroundColor Cyan
+    Write-Host "  Starting Clip Pulse AI Local Studio (24/7 Capture Ready)     " -ForegroundColor Cyan
     Write-Host "==========================================================" -ForegroundColor Cyan
 
     # Prevent system sleep
-    Write-Host "[INFO] Preventing Windows idle sleep while PeakCut is running..." -ForegroundColor Yellow
+    Write-Host "[INFO] Preventing Windows idle sleep while Clip Pulse AI is running..." -ForegroundColor Yellow
     $Win32Sleep::SetThreadExecutionState($PreventSleepFlags) | Out-Null
 } catch {
     Write-Host "==========================================================" -ForegroundColor Cyan
-    Write-Host "  Starting PeakCut Local Studio (24/7 Capture Ready)     " -ForegroundColor Cyan
+    Write-Host "  Starting Clip Pulse AI Local Studio (24/7 Capture Ready)     " -ForegroundColor Cyan
     Write-Host "==========================================================" -ForegroundColor Cyan
 }
 

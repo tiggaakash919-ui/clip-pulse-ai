@@ -4,6 +4,7 @@ import json
 import os
 import math
 import queue
+import re
 import shutil
 import threading
 import time
@@ -148,7 +149,7 @@ def public(job) -> dict:
     """What the browser may see: no server paths, no owner id."""
     out = {k: v for k, v in job.items() if k not in HIDDEN}
     out["source"] = {k: v for k, v in job["source"].items() if k != "path"}
-    out["clips"] = [{k: v for k, v in c.items() if k not in ("src", "fixed_words", "fixed_for")} for c in job["clips"]]
+    out["clips"] = [{k: v for k, v in c.items() if k not in ("src", "fixed_words", "fixed_for", "caption_override", "caption_override_for")} for c in job["clips"]]
     ai = job.get("ai") or {}
     out["ai"] = {"tokens": ai.get("tokens", 0), "note": ai.get("note", ""), "used": bool(ai.get("model"))}   # never the model, never raw errors
     if job.get("status") == "queued":
@@ -339,6 +340,7 @@ def request_render(jid, cid, changes: dict):
     job = _jobs[jid]
     clip = next(c for c in job["clips"] if c["id"] == cid)
     new = dict(clip)
+    old_start, old_end = float(clip["start"]), float(clip["end"])
     for k in ("start", "end"):
         if k in changes:
             new[k] = round(float(changes[k]), 2)
@@ -356,9 +358,49 @@ def request_render(jid, cid, changes: dict):
         new["style"] = DEFAULTS["style"]
     if new.get("layout") not in render.LAYOUTS:
         new["layout"] = DEFAULTS["layout"]
+    if "captions" in changes:
+        words = caption_words(jid, cid)
+        edited = str(changes.get("captions") or "").split()
+        if not edited:
+            raise ValueError("Add the caption words before saving.")
+        if len(edited) != len(words):
+            raise ValueError(f"Keep the same number of words ({len(words)}) so caption timing stays in sync.")
+        cleaned = []
+        for token in edited:
+            token = re.sub(r"[\x00-\x1f\x7f]", "", token).strip()[:60]
+            if not token:
+                raise ValueError("A caption word cannot be empty.")
+            cleaned.append(token)
+        old_span = max(0.01, old_end - old_start)
+        new_span = max(0.01, new["end"] - new["start"])
+        fixed = []
+        for w, token in zip(words, cleaned):
+            start = new["start"] + (float(w.get("s", old_start)) - old_start) / old_span * new_span
+            end = new["start"] + (float(w.get("e", old_end)) - old_start) / old_span * new_span
+            start = max(new["start"], min(new["end"], start))
+            end = max(start, min(new["end"], end))
+            fixed.append(dict(w, w=token, s=round(start, 2), e=round(end, 2)))
+        new["caption_override"] = fixed
+        new["caption_override_for"] = [round(new["start"], 2), round(new["end"], 2), "en2"]
     clip.update(new, status="queued")
     save(job)
     _q.put(("clip", jid, cid))
+
+
+def caption_words(jid, cid):
+    """Words shown on a clip, for the small caption editor. Never expose the saved file path."""
+    job = _jobs[jid]
+    clip = next(c for c in job["clips"] if c["id"] == cid)
+    span = [round(clip["start"], 2), round(clip["end"], 2), "en2"]
+    if clip.get("caption_override_for") == span and clip.get("caption_override"):
+        return clip["caption_override"]
+    if clip.get("fixed_for") == span and clip.get("fixed_words"):
+        return clip["fixed_words"]
+    try:
+        words = json.loads((Path(job["dir"]) / "words.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        words = []
+    return [w for w in words if clip["start"] - 1 <= w.get("s", -2) <= clip["end"] + 1]
 
 
 def render_one(job, clip, words):
@@ -372,7 +414,9 @@ def render_one(job, clip, words):
             clip["end"] = min(clip["end"], job["duration"])
         local = dict(clip, start=clip["start"] - off, end=clip["end"] - off, hook=roman.to_roman(clip.get("hook") or ""))
         span = [round(clip["start"], 2), round(clip["end"], 2), "en2"]      # "en2": captions made always-English
-        if clip.get("fixed_for") == span and clip.get("fixed_words") and not any(
+        if clip.get("caption_override_for") == span and clip.get("caption_override"):
+            raw = clip["caption_override"]
+        elif clip.get("fixed_for") == span and clip.get("fixed_words") and not any(
                 roman.needs_roman(w.get("w", "")) for w in clip["fixed_words"]):
             raw = clip["fixed_words"]          # already tidied for this exact span: no second AI call
         else:

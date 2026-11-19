@@ -71,7 +71,7 @@ def ensure() -> None:
             print("  Speech model ready.\n", flush=True)
         except Exception as e:  # noqa: BLE001
             state["error"] = str(e)[-200:]
-            raise RuntimeError(f"PeakCut couldn't download its speech model ({config.ASR_MODEL_NAME}). Check the "
+            raise RuntimeError(f"Clip Pulse AI couldn't download its speech model ({config.ASR_MODEL_NAME}). Check the "
                                "internet connection and free disk space, then try again.") from e
         finally:
             state["doing"] = False

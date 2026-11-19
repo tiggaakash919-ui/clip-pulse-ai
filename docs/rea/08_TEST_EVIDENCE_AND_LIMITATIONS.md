@@ -57,7 +57,7 @@ OK
 
 ### 1. YouTube Bot Check / IP Rate Limiting (HTTP 429)
 - **Condition**: YouTube occasionally flags automated stream extraction requests.
-- **System Behavior**: PeakCut detects bot challenge strings via `media._BOT_CHECK`, sets a 10-minute exponential backoff circuit breaker (`YT_PAUSE = 600`), and halts unnecessary aggressive retries.
+- **System Behavior**: Clip Pulse AI detects bot challenge strings via `media._BOT_CHECK`, sets a 10-minute exponential backoff circuit breaker (`YT_PAUSE = 600`), and halts unnecessary aggressive retries.
 - **Remedy**: Export clean session cookies into `data/cookies.txt` and set `PEAKCUT_YTDLP_COOKIES=data/cookies.txt`.
 
 ### 2. Stream Inactive / Scheduled Upcoming

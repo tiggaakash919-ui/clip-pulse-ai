@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut 24/7 Unified Background Starter (Server + Global Online Tunnel)
+# Clip Pulse AI 24/7 Unified Background Starter (Server + Global Online Tunnel)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
@@ -30,7 +30,7 @@ if [ -f "$PID_FILE" ]; then
     OLD_PID=$(cat "$PID_FILE")
     if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
         if curl -s --connect-timeout 2 http://127.0.0.1:8766/api/system/preflight >/dev/null 2>&1; then
-            echo "[INFO] PeakCut 24/7 is ALREADY RUNNING (Supervisor PID: $OLD_PID)."
+            echo "[INFO] Clip Pulse AI 24/7 is ALREADY RUNNING (Supervisor PID: $OLD_PID)."
             if [ -f "$URL_FILE" ]; then
                 echo "Global Online Link: $(cat "$URL_FILE")"
             fi
@@ -56,7 +56,7 @@ SUPERVISOR_PID=$!
 disown 2>/dev/null || true
 echo "$SUPERVISOR_PID" > "$PID_FILE"
 
-echo "[1/2] Starting PeakCut 24/7 Engine & Cloudflare Tunnel..."
+echo "[1/2] Starting Clip Pulse AI 24/7 Engine & Cloudflare Tunnel..."
 
 # Wait for server to become responsive
 TRIES=0
@@ -84,7 +84,7 @@ done
 
 echo ""
 echo "=========================================================="
-echo "    PEAKCUT 24/7 UNATTENDED AUTOMATION IS ACTIVE!         "
+echo "    CLIP PULSE AI 24/7 UNATTENDED AUTOMATION IS ACTIVE!         "
 echo "=========================================================="
 echo ""
 echo "  [1] GLOBAL ONLINE LINK (Dost ke sath share karein):"

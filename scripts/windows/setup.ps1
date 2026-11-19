@@ -1,4 +1,4 @@
-# PowerShell Setup Script for PeakCut on Windows (Personal-Use MVP)
+# PowerShell Setup Script for Clip Pulse AI on Windows (Personal-Use MVP)
 # Requires: Windows 10/11 x64, Python 3.10-3.12, FFmpeg, Git
 
 $ErrorActionPreference = "Continue"
@@ -7,7 +7,7 @@ $RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 Set-Location $RepoRoot
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "  PeakCut Windows Setup & Preflight Check (REA Pipeline) " -ForegroundColor Cyan
+Write-Host "  Clip Pulse AI Windows Setup & Preflight Check (REA Pipeline) " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Working Directory: $RepoRoot" -ForegroundColor Gray
 
@@ -135,7 +135,7 @@ if (-not $ffmpeg -or -not $ffprobe) {
     } else {
         Write-Host "[ACTION REQUIRED] FFmpeg install karein:" -ForegroundColor Red
         Write-Host "1. Download: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -ForegroundColor White
-        Write-Host "2. Extract karke bin folder ko system PATH me add karein ya PeakCut ke data\bin folder me daalein." -ForegroundColor White
+        Write-Host "2. Extract karke bin folder ko system PATH me add karein ya Clip Pulse AI ke data\bin folder me daalein." -ForegroundColor White
         exit 1
     }
 }
@@ -194,7 +194,7 @@ Write-Host "`nPre-fetching default speech model (Multilingual Whisper)..." -Fore
 & $VenvPython -m studio.fetch_model
 
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host "  PeakCut Setup Complete! Everything is ready!           " -ForegroundColor Green
+Write-Host "  Clip Pulse AI Setup Complete! Everything is ready!           " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host "To start the application, run: .\scripts\windows\start.bat" -ForegroundColor Cyan
 Write-Host "Or with Online Link to share with phone: .\scripts\windows\start_online.bat" -ForegroundColor Cyan

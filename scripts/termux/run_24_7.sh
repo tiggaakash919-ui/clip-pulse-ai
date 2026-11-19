@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut 24/7 Background Starter
+# Clip Pulse AI 24/7 Background Starter
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
@@ -19,7 +19,7 @@ if [ -f "$PID_FILE" ]; then
     OLD_PID=$(cat "$PID_FILE")
     if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
         if curl -s http://127.0.0.1:8766/api/system/preflight >/dev/null 2>&1; then
-            echo "[INFO] PeakCut is already running 24/7 (Supervisor PID: $OLD_PID)."
+            echo "[INFO] Clip Pulse AI is already running 24/7 (Supervisor PID: $OLD_PID)."
             echo "Dashboard: http://127.0.0.1:8766"
             exit 0
         fi
@@ -42,7 +42,7 @@ disown 2>/dev/null || true
 echo "$SUPERVISOR_PID" > "$PID_FILE"
 
 # Wait up to 15 seconds for server to be responsive
-echo "Starting PeakCut engine..."
+echo "Starting Clip Pulse AI engine..."
 TRIES=0
 MAX_TRIES=15
 READY=0
@@ -57,7 +57,7 @@ done
 
 if [ $READY -eq 1 ]; then
     echo "=========================================================="
-    echo "  PEAKCUT 24/7 ENGINE IS LIVE!                           "
+    echo "  CLIP PULSE AI 24/7 ENGINE IS LIVE!                           "
     echo "=========================================================="
     echo "  Dashboard URL: http://127.0.0.1:8766"
     echo "  App URL:       http://127.0.0.1:8766/app"

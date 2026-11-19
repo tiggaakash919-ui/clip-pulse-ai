@@ -1,6 +1,6 @@
 # 03. Windows Local-First Setup & Script Guide
 
-This guide provides step-by-step instructions for running PeakCut locally on Windows 10/11 (x64) as a personal-use 24/7 continuous livestream clipping MVP.
+This guide provides step-by-step instructions for running Clip Pulse AI locally on Windows 10/11 (x64) as a personal-use 24/7 continuous livestream clipping MVP.
 
 ---
 
@@ -36,7 +36,7 @@ This guide provides step-by-step instructions for running PeakCut locally on Win
 
 ## 2. Fast Setup (Using Automated Scripts)
 
-From PowerShell or Command Prompt inside the `PeakCut` repository folder:
+From PowerShell or Command Prompt inside the Clip Pulse AI project folder:
 
 ### Step 1: Run Setup
 ```powershell
@@ -110,12 +110,12 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 **Fix**: Add the folder containing `ffmpeg.exe` (e.g., `C:\ffmpeg\bin`) to your User or System `PATH` environment variable, then restart PowerShell.
 
 ### Issue 3: YouTube Rate Limit / Bot Block ("Sign in to confirm you're not a bot")
-**Symptom**: `YouTube isn't letting PeakCut download videos right now.`
+**Symptom**: `YouTube isn't letting Clip Pulse AI download videos right now.`
 **Explanation**: YouTube occasionally blocks IP addresses that send automated extraction requests.
 **Fix**:
-1. Wait 10 minutes (PeakCut's automated circuit breaker backs off automatically).
+1. Wait 10 minutes (Clip Pulse AI's automated circuit breaker backs off automatically).
 2. Or export cookies from your browser via a Netscape cookies format extension to `data/cookies.txt` and set `PEAKCUT_YTDLP_COOKIES=data/cookies.txt` in `.env`.
 
 ### Issue 4: Out of Disk Space
 **Symptom**: Recording stops with note `low disk space (... GB free, safety minimum is 5.0 GB)`.
-**Fix**: PeakCut has a safety circuit breaker that halts capture if free disk space falls below `PEAKCUT_DISK_SAFETY_GB` (default 5.0 GB) to protect your Windows system drive. Free up disk space or change the data folder location in `.env` using `PEAKCUT_DATA=D:\PeakCutData`.
+**Fix**: Clip Pulse AI has a safety circuit breaker that halts capture if free disk space falls below `PEAKCUT_DISK_SAFETY_GB` (default 5.0 GB) to protect your Windows system drive. Free up disk space or change the data folder location in `.env` using `PEAKCUT_DATA=D:\ClipPulseAIData`.

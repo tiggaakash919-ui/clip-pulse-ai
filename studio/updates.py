@@ -1,7 +1,7 @@
-"""Is there a newer PeakCut? Compares the version running here with the latest on GitHub, once a minute.
+"""Is there a newer Clip Pulse AI? Compares the version running here with the latest on GitHub, once a minute.
 
-The version here is the git commit this folder was on when PeakCut started (read straight from .git, no git
-program needed). Each minute, in the background, PeakCut asks GitHub which commit the project is on now: one small
+The version here is the git commit this folder was on when Clip Pulse AI started (read straight from .git, no git
+program needed). Each minute, in the background, Clip Pulse AI asks GitHub which commit the project is on now: one small
 request to the same address `git` itself uses, which has no hourly allowance to run out of. Only when that commit
 changes does it ask GitHub's API what was added, to show the list. Nothing about this computer or its users is
 sent. The owner sees a notice in the dashboard within a minute or two, with no restart.
@@ -21,7 +21,7 @@ REPO = (config.env("PEAKCUT_UPDATE_REPO") or "haziqahmedqasmi/peakcut").strip().
 BRANCH = (config.env("PEAKCUT_UPDATE_BRANCH") or "main").strip()
 ON = config.env("PEAKCUT_UPDATE_CHECK", "1") != "0" and bool(re.fullmatch(r"[\w.\-]+/[\w.\-]+", REPO))
 EVERY = 60
-UA = {"User-Agent": "PeakCut-update-check"}
+UA = {"User-Agent": "Clip Pulse AI-update-check"}
 _state = {"checked": 0.0, "result": None, "seen": "", "notes": None}
 _lock = threading.Lock()
 _started = False
@@ -51,7 +51,7 @@ def current() -> str:
     return ""
 
 
-RUNNING = current()       # the code in memory: what PeakCut is actually running until it is restarted
+RUNNING = current()       # the code in memory: what Clip Pulse AI is actually running until it is restarted
 
 
 def newest() -> str:
@@ -118,7 +118,7 @@ def latest():
 
 
 def start():
-    """Look every minute, in the background, for as long as PeakCut runs."""
+    """Look every minute, in the background, for as long as Clip Pulse AI runs."""
     global _started
     if not ON or _started:
         return

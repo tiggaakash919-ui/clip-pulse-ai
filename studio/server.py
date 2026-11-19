@@ -1,4 +1,4 @@
-"""PeakCut web server. Run with:  python -m studio.server
+"""Clip Pulse AI web server. Run with:  python -m studio.server
 
 Public pages:  /  /login  /signup          The app:  /app  (signed-in users only)
 Everything under /api, /media and /oauth needs a session, except /api/auth/* and /api/public."""
@@ -34,7 +34,7 @@ def _quiet(fn):
         print(f"  {e}", flush=True)
 
 
-app = FastAPI(title="PeakCut", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Clip Pulse AI", docs_url=None, redoc_url=None, openapi_url=None)
 WEB = config.ROOT / "web"
 OPEN = ("/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
@@ -73,7 +73,7 @@ def _startup():
     live.start()
     posting.start()
     from . import updates
-    updates.start()                  # looks for a newer PeakCut every minute, in the background
+    updates.start()                  # looks for a newer Clip Pulse AI every minute, in the background
 
 
 # ================================================================ the gate: who is asking, and are they allowed
@@ -131,7 +131,7 @@ class Gate:
             # must have been asked for by its real address (a number, "localhost", or the address in settings),
             # so another website cannot reach it through a made-up name that points at this machine.
             if not _own_address(req.headers.get("host", "")):
-                return await deny(403, "Open PeakCut by its own address.")
+                return await deny(403, "Open Clip Pulse AI by its own address.")
             if path == "/" or path == "/reset" or path.startswith("/auth/"):
                 return await deny(303, "", redirect="/app")
             if path.startswith("/api/auth/") and path != "/api/auth/me":
@@ -262,7 +262,7 @@ def _ip(request: Request) -> str:
 
 
 def _from_here(req, must_say=False) -> bool:
-    """Did this change come from PeakCut's own page, and not from another website?
+    """Did this change come from Clip Pulse AI's own page, and not from another website?
 
     The browser's own answer is trusted first: it marks every request "same-origin" or not, and a web page cannot
     fake that mark. Comparing the page's address with the address the request arrived at is only the fallback,
@@ -277,7 +277,7 @@ def _from_here(req, must_say=False) -> bool:
 
 
 def _own_address(host: str) -> bool:
-    """Is this the address PeakCut is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
+    """Is this the address Clip Pulse AI is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
     host in PEAKCUT_PUBLIC_URL."""
     import ipaddress
     name = host.strip().lower()
@@ -361,9 +361,9 @@ def reset_page():
 
 
 LEGAL = {
-    "privacy": ("Privacy Policy", "How PeakCut collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
-    "terms": ("Terms of Service", "The terms for using PeakCut, the AI clipping tool for streams and videos: accounts, availability and liability."),
-    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with PeakCut, the AI stream clipping tool."),
+    "privacy": ("Privacy Policy", "How Clip Pulse AI collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
+    "terms": ("Terms of Service", "The terms for using Clip Pulse AI, the AI clipping tool for streams and videos: accounts, availability and liability."),
+    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with Clip Pulse AI, the AI stream clipping tool."),
 }
 
 
@@ -378,9 +378,9 @@ def legal_page(request: Request):
     contact = config.CONTACT_EMAIL
     who = (f'<a href="mailto:{_h.escape(contact)}">{_h.escape(contact)}</a>' if contact
            else "the contact details on our website")
-    name = _h.escape(config.LEGAL_NAME or "PeakCut")
+    name = _h.escape(config.LEGAL_NAME or "Clip Pulse AI")
     law = (f"the laws of {_h.escape(config.LEGAL_COUNTRY)}" if config.LEGAL_COUNTRY
-           else "the laws of the country where PeakCut's operator is established")
+           else "the laws of the country where Clip Pulse AI's operator is established")
     out = (_LEGAL_HTML or (WEB / "legal.html").read_text(encoding="utf-8"))
     for k, v in {"{{CONTACT}}": who, "{{PAGE}}": page, "{{PAGE_PATH}}": page, "{{SITE}}": _h.escape(config.PUBLIC_URL),
                  "{{NAME}}": name, "{{LAW}}": law, "{{TITLE}}": title, "{{DESC}}": desc}.items():
@@ -680,6 +680,20 @@ def list_jobs():
 @app.get("/api/jobs/{jid}")
 def get_job(jid: str):
     return jobs.public(_job_or_404(jid))
+
+
+@app.get("/api/jobs/{jid}/clips/{cid}/captions")
+def get_clip_captions(jid: str, cid: str):
+    job = _job_or_404(jid)
+    clip = next((c for c in job["clips"] if c["id"] == cid), None)
+    if not clip:
+        raise HTTPException(404, "No such clip")
+    if job["status"] in ("queued", "running") or clip.get("status") in ("queued", "rendering"):
+        raise HTTPException(409, "Wait until this clip is ready before editing captions.")
+    words = jobs.caption_words(jid, cid)
+    if not words:
+        raise HTTPException(404, "No caption words were saved for this clip.")
+    return {"text": " ".join(str(w.get("w", "")) for w in words), "count": len(words)}
 
 
 @app.get("/api/preview")
@@ -1065,7 +1079,7 @@ def email_preview(request: Request, kind: str = "verify"):
     from . import mailer
     _admin(request)
     if kind == "reset":
-        page = mailer.preview("Reset your password", "Someone asked to reset the password for this PeakCut account. If that was you, choose a new one below.",
+        page = mailer.preview("Reset your password", "Someone asked to reset the password for this Clip Pulse AI account. If that was you, choose a new one below.",
                               "Choose a new password", config.PUBLIC_URL + "/reset?t=example",
                               "The link works for one hour. If you didn't ask for this, ignore this email and your password stays the same.")
     else:
@@ -1080,9 +1094,9 @@ def test_email(request: Request):
     me_ = _admin(request)
     if not mailer.ready():
         raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings to .env first.")
-    mailer.send(me_.email, "PeakCut test email", "Your emails are working",
-                "This is a test from your PeakCut server. Account emails like this one will now reach people.",
-                "Open PeakCut", config.PUBLIC_URL + "/app", "You can ignore this message.")
+    mailer.send(me_.email, "Clip Pulse AI test email", "Your emails are working",
+                "This is a test from your Clip Pulse AI server. Account emails like this one will now reach people.",
+                "Open Clip Pulse AI", config.PUBLIC_URL + "/app", "You can ignore this message.")
     return {"sent_to": me_.email}
 
 
@@ -1475,9 +1489,9 @@ def public_clip(token: str):
     return FileResponse(f, media_type="video/mp4", headers={"Cache-Control": "private, no-store"})
 
 
-# ---------------------------------------------------------------- where PeakCut keeps everything (Settings, Storage)
+# ---------------------------------------------------------------- where Clip Pulse AI keeps everything (Settings, Storage)
 def _on_this_computer(request: Request) -> bool:
-    """Is the person sitting at the computer PeakCut runs on? Only then can a folder window be opened for them."""
+    """Is the person sitting at the computer Clip Pulse AI runs on? Only then can a folder window be opened for them."""
     host = request.client.host if request.client else ""
     return host in ("127.0.0.1", "::1", "localhost") and not config.env("PEAKCUT_TRUST_PROXY")
 
@@ -1494,7 +1508,7 @@ def storage_open(request: Request):
     from . import storage
     _admin(request)
     if not _on_this_computer(request):
-        raise HTTPException(400, "The folder can only be opened on the computer PeakCut runs on.")
+        raise HTTPException(400, "The folder can only be opened on the computer Clip Pulse AI runs on.")
     try:
         storage.open_folder()
     except OSError as e:
@@ -1507,7 +1521,7 @@ def storage_pick(request: Request):
     from . import storage
     _admin(request)
     if not _on_this_computer(request):
-        raise HTTPException(400, "Type the folder's path instead: a folder window can only be shown on the computer PeakCut runs on.")
+        raise HTTPException(400, "Type the folder's path instead: a folder window can only be shown on the computer Clip Pulse AI runs on.")
     return {"path": storage.pick_folder()}
 
 
@@ -1574,7 +1588,7 @@ def test_alert():
         auth_problem = str(e)
     if auth_problem:
         raise HTTPException(429, auth_problem)
-    problems = alerts.send("PeakCut: test message. Alerts are working.")
+    problems = alerts.send("Clip Pulse AI: test message. Alerts are working.")
     if problems:
         raise HTTPException(400, "; ".join(problems))
     return {"ok": True}
@@ -1632,9 +1646,9 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
 
 
 def main():
-    print(f"\n  PeakCut is running:  {config.PUBLIC_URL}\n")
+    print(f"\n  Clip Pulse AI is running:  {config.PUBLIC_URL}\n")
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
-        print("  Sign-in is off, so anyone who can reach this address can use PeakCut and its AI key.\n"
+        print("  Sign-in is off, so anyone who can reach this address can use Clip Pulse AI and its AI key.\n"
               "  On a server other people can reach, set PEAKCUT_ACCOUNTS=1 in .env.\n", flush=True)
     if config.env("PEAKCUT_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)

@@ -1,6 +1,6 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Global Online Public Access (Cloudflare Tunnel)
-# Allows anyone, anywhere in the world to open PeakCut via a secure HTTPS link.
+# Clip Pulse AI Global Online Public Access (Cloudflare Tunnel)
+# Allows anyone, anywhere in the world to open Clip Pulse AI via a secure HTTPS link.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -12,9 +12,9 @@ TUNNEL_LOG="$REPO_ROOT/data/tunnel.log"
 URL_FILE="$REPO_ROOT/data/public_url.txt"
 PID_FILE="$REPO_ROOT/data/tunnel.pid"
 
-# Ensure PeakCut server is running
+# Ensure Clip Pulse AI server is running
 if ! curl -s http://127.0.0.1:8766/api/system/preflight >/dev/null 2>&1; then
-    echo "[INFO] Starting PeakCut backend first..."
+    echo "[INFO] Starting Clip Pulse AI backend first..."
     bash "$SCRIPT_DIR/run_24_7.sh"
     sleep 3
 fi
@@ -58,7 +58,7 @@ if [ -n "$PUBLIC_URL" ]; then
     echo "$PUBLIC_URL/app" > "$URL_FILE"
     echo ""
     echo "=========================================================="
-    echo "       PEAKCUT IS NOW LIVE ON THE INTERNET!               "
+    echo "       CLIP PULSE AI IS NOW LIVE ON THE INTERNET!         "
     echo "=========================================================="
     echo ""
     echo "  Apne dost ko ye link WhatsApp / Telegram par bhej dein:"
@@ -69,7 +69,7 @@ if [ -n "$PUBLIC_URL" ]; then
     echo "  - Aapka dost 1 km dur ho ya 1000 km dur, wo apne mobile"
     echo "    ya computer ke kisi bhi browser (Chrome/Safari) me"
     echo "    ye link khol kar stream paste karke clips bana sakta hai!"
-    echo "  - Phone 2 ke PeakCut App me 'Enter Host IP / URL' me"
+    echo "  - Phone 2 ke Clip Pulse AI App me 'Enter Host IP / URL' me"
     echo "    bhi ye link daal sakte hain."
     echo "  - Free, fast aur automatic HTTPS SSL secure connection."
     echo ""

@@ -1,6 +1,6 @@
-# 10. PeakCut Android App (APK Guide)
+# 10. Clip Pulse AI Android App (APK Guide)
 
-This guide documents the native Android App built for PeakCut.
+This guide documents the native Android App built for Clip Pulse AI.
 
 ---
 
@@ -9,7 +9,7 @@ This guide documents the native Android App built for PeakCut.
 - **File Path**: `/sdcard/Download/PeakCut.apk` (Download folder)
 - **Local Copy**: `/data/user/0/com.termux/files/home/PeakCut/data/PeakCut.apk`
 - **Package Name**: `com.peakcut.app`
-- **Application Label**: `PeakCut`
+- **Application Label**: `Clip Pulse AI`
 - **Minimum Android Version**: Android 7.0 (API Level 24)
 - **Target Android Version**: Android 14+ (API Level 34)
 - **Signatures**: APK Signature Scheme v2 & v3 (Valid & Self-Signed)
@@ -26,7 +26,7 @@ This guide documents the native Android App built for PeakCut.
 3. **Switch Between Phone and PC**:
    - The top action bar includes a **Server** button.
    - **Current Phone Mode**: Set to `http://127.0.0.1:8766`.
-   - **Future PC Mode**: When you run PeakCut on your PC later, simply tap the **Server** button and enter your PC's local WiFi IP (e.g., `http://192.168.1.50:8766`) to control your PC setup directly from your phone!
+   - **Future PC Mode**: When you run Clip Pulse AI on your PC later, simply tap the **Server** button and enter your PC's local WiFi IP (e.g., `http://192.168.1.50:8766`) to control your PC setup directly from your phone!
 4. **Offline Detection & Reconnect**:
    - Color-coded status indicator dot (Green = Connected, Orange = Pending, Red = Offline).
    - If the backend is stopped, a clean error screen with a "Retry" button appears.

@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title PeakCut Launcher
+title Clip Pulse AI Launcher
 set PORT=8765
 set "VPY=.venv\Scripts\python.exe"
 if /i "%~1"=="online" set PEAKCUT_ACCOUNTS=1
@@ -70,7 +70,7 @@ rem ---- Speech model (480 MB, ek baar)
 "%VPY%" -m studio.fetch_model || goto fail
 
 rem ---- Server alag window me (error wahi dikhega)
-start "PeakCut Server" cmd /k ".venv\Scripts\python.exe -m studio.server"
+start "Clip Pulse AI Server" cmd /k ".venv\Scripts\python.exe -m studio.server"
 
 echo [..] Server start hone ka intezaar...
 set /a N=0
@@ -78,14 +78,14 @@ set /a N=0
 call :portup && goto ready
 set /a N+=1
 if %N% geq 150 (
-  echo [X] Server 5 minute me start nahi hua. "PeakCut Server" window me error dekhein.
+  echo [X] Server 5 minute me start nahi hua. "Clip Pulse AI Server" window me error dekhein.
   pause & exit /b 1
 )
 timeout /t 2 /nobreak >nul
 goto wait
 
 :ready
-echo [OK] PeakCut chal raha hai: http://127.0.0.1:%PORT%
+echo [OK] Clip Pulse AI chal raha hai: http://127.0.0.1:%PORT%
 if /i not "%~1"=="online" (
   start "" http://127.0.0.1:%PORT%
   exit /b 0

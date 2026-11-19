@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Cloudflare Tunnel Worker
+# Clip Pulse AI Cloudflare Tunnel Worker
 trap '' HUP
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"

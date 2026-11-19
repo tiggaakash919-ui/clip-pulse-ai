@@ -1,10 +1,10 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut 24/7 Background Daemon Stop Script
+# Clip Pulse AI 24/7 Background Daemon Stop Script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "Stopping PeakCut 24/7 Daemon..."
+echo "Stopping Clip Pulse AI 24/7 Daemon..."
 
 PID_FILE="$REPO_ROOT/data/peakcut_24_7.pid"
 if [ -f "$PID_FILE" ]; then
@@ -27,4 +27,4 @@ if command -v termux-wake-unlock >/dev/null 2>&1; then
     echo "[OK] Released Termux Wake-Lock."
 fi
 
-echo "PeakCut 24/7 daemon stopped."
+echo "Clip Pulse AI 24/7 daemon stopped."

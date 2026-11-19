@@ -1,6 +1,6 @@
-# 09. Running PeakCut on Android Phone (Termux Mobile Guide)
+# 09. Running Clip Pulse AI on Android Phone (Termux Mobile Guide)
 
-This guide explains how to run PeakCut directly on your Android phone using Termux for 24/7 continuous YouTube livestream clipping.
+This guide explains how to run Clip Pulse AI directly on your Android phone using Termux for 24/7 continuous YouTube livestream clipping.
 
 ---
 
@@ -34,7 +34,7 @@ To run natively in Termux:
 
 When you lock your phone or turn off the screen, Android's battery manager normally suspends app CPU cycles.
 
-PeakCut's mobile runner ([`scripts/termux/start.sh`](file:///data/user/0/com.termux/files/home/PeakCut/scripts/termux/start.sh)) calls:
+Clip Pulse AI's mobile runner ([`scripts/termux/start.sh`](file:///data/user/0/com.termux/files/home/PeakCut/scripts/termux/start.sh)) calls:
 ```bash
 termux-wake-lock
 ```
@@ -66,12 +66,12 @@ http://127.0.0.1:8765
 Paste your YouTube livestream URL, select genre (Gaming, Podcast, IRL, General), and click **Start**.
 
 ### Step 4: Accessing Generated Clips
-Final ready clips are saved in:
+Final ready clips are saved in the `data/exported_clips/` folder inside the Clip Pulse AI project directory:
 ```
-/data/user/0/com.termux/files/home/PeakCut/data/exported_clips/
+data/exported_clips/
 ```
 In this chat, clips can be played directly with:
 ```markdown
-![Clip](/data/user/0/com.termux/files/home/PeakCut/data/exported_clips/clip_123.mp4)
+![Clip](data/exported_clips/clip_123.mp4)
 ```
 Or you can view/copy them to your phone's main storage (`/sdcard/Movies/` or `/sdcard/Download/`).

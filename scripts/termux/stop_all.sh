@@ -1,10 +1,10 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# Stop PeakCut 24/7 Supervisor, Server, and Cloudflare Tunnel
+# Stop Clip Pulse AI 24/7 Supervisor, Server, and Cloudflare Tunnel
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-echo "Stopping PeakCut 24/7 Engine and Online Tunnel..."
+echo "Stopping Clip Pulse AI 24/7 Engine and Online Tunnel..."
 
 PID_FILE="$REPO_ROOT/data/supervisor_all.pid"
 if [ -f "$PID_FILE" ]; then
@@ -25,4 +25,4 @@ if command -v termux-wake-unlock >/dev/null 2>&1; then
     echo "[OK] Released Termux Wake-Lock."
 fi
 
-echo "PeakCut 24/7 engine stopped."
+echo "Clip Pulse AI 24/7 engine stopped."

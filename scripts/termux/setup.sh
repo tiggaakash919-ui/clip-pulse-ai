@@ -1,6 +1,6 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Android/Termux Setup Script
-# Configures PeakCut to run natively on Android inside Termux
+# Clip Pulse AI Android/Termux Setup Script
+# Configures Clip Pulse AI to run natively on Android inside Termux
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 echo "=========================================================="
-echo "  PeakCut Phone / Termux Setup (Mobile 24/7 Pipeline)    "
+echo "  Clip Pulse AI Phone / Termux Setup (Mobile 24/7 Pipeline)    "
 echo "=========================================================="
 echo "Working Directory: $REPO_ROOT"
 echo "TMPDIR: $TMPDIR"
@@ -41,9 +41,9 @@ echo "[OK] Clip export directory ready: $REPO_ROOT/data/exported_clips"
 ENV_FILE="$REPO_ROOT/.env"
 if [ ! -f "$ENV_FILE" ]; then
     cat << 'EOF' > "$ENV_FILE"
-# PeakCut Mobile (Phone / Termux) Settings
-PEAKCUT_HOST=127.0.0.1
-PEAKCUT_PORT=8765
+# Clip Pulse AI Mobile (Phone / Termux) Settings
+PEAKCUT_HOST=0.0.0.0
+PEAKCUT_PORT=8766
 PEAKCUT_DATA=data
 
 # Multilingual Speech Model for Phone (Whisper Tiny or Base)
@@ -66,6 +66,6 @@ fi
 
 echo ""
 echo "=========================================================="
-echo "  PeakCut Phone Setup Complete!                          "
+echo "  Clip Pulse AI Phone Setup Complete!                          "
 echo "=========================================================="
 echo "To start on phone: bash scripts/termux/start.sh"

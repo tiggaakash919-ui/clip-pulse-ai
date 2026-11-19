@@ -1,7 +1,7 @@
 """Talking to the AI service. You bring your own key, and choose the service and model in the dashboard
 (Settings, AI) or in .env. What is saved from the dashboard is kept in ai.json in the data folder and wins.
 
-    PEAKCUT_AI_PROVIDER   gemini | openai | xai | groq | openrouter | anthropic | ollama | custom
+    PEAKCUT_AI_PROVIDER   gemini | openai | xai | groq | openrouter | coarena | anthropic | ollama | custom
     PEAKCUT_AI_MODELS     one or more model ids, comma separated, tried in this order
     PEAKCUT_AI_KEY        your key (or PEAKCUT_AI_KEY_FILE, a file holding it)
     PEAKCUT_AI_BASE_URL   only for "custom" (any service that speaks the OpenAI chat format), or to override
@@ -24,6 +24,7 @@ PROVIDERS = {
     "xai": ("Grok", "https://api.x.ai/v1", "openai", "https://console.x.ai", "grok-4"),
     "groq": ("Groq", "https://api.groq.com/openai/v1", "openai", "https://console.groq.com/keys", "llama-3.3-70b-versatile"),
     "openrouter": ("OpenRouter", "https://openrouter.ai/api/v1", "openai", "https://openrouter.ai/keys", "google/gemini-2.5-flash"),
+    "coarena": ("Coarena", "https://coarena.ai/api/v1", "openai", "https://coarena.ai", "gpt-6.2-astra"),
     "anthropic": ("Claude", "https://api.anthropic.com/v1", "anthropic", "https://console.anthropic.com", ""),
     "ollama": ("Ollama (on this machine)", "http://127.0.0.1:11434/v1", "openai", "https://ollama.com", "llama3.1"),
     "custom": ("Custom (OpenAI-compatible)", "", "openai", "", ""),
@@ -193,7 +194,7 @@ def explain(e) -> str:
     if "429" in text or "quota" in low or "rate limit" in low or "exhausted" in low:
         return f"{label()} says the key has hit its limit or has no credit left. Check the account with {label()}, or try again later."
     if "connect" in low or "timed out" in low or "timeout" in low or "getaddrinfo" in low or "refused" in low:
-        return f"PeakCut couldn't reach {label()}. Check the internet connection" + (" and that Ollama is running." if provider() == "ollama" else ".")
+        return f"Clip Pulse AI couldn't reach {label()}. Check the internet connection" + (" and that Ollama is running." if provider() == "ollama" else ".")
     return ""
 
 

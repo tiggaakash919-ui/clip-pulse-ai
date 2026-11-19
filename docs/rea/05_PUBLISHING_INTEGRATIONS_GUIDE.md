@@ -6,7 +6,7 @@ For a personal-use MVP, **automatic unattended posting of raw unreviewed clips i
 - An unintended, offensive, or out-of-context moment could be broadcast publicly.
 - Platform copyright strikes or spam penalties could be triggered.
 
-Therefore, PeakCut's REA design adheres to a **Manual-Approval-First** workflow:
+Therefore, Clip Pulse AI's REA design adheres to a **Manual-Approval-First** workflow:
 1. All generated clips are saved locally to `data/exported_clips/` and presented in the dashboard with score, hook, and full transcript excerpt.
 2. The user watches the clip in the dashboard player.
 3. If approved, the user clicks **Publish to Shorts** or **Publish to Reels**, or copies the `.mp4` file directly.
@@ -72,7 +72,7 @@ POST https://graph.facebook.com/v19.0/{ig_user_id}/media
   &video_url=https://example.com/clip_123.mp4
   &caption=Epic+stream+moment
 ```
-Because PeakCut runs locally on your Windows PC (`http://127.0.0.1`), Meta's servers cannot reach your local hard drive directly.
+Because Clip Pulse AI runs locally on your Windows PC (`http://127.0.0.1`), Meta's servers cannot reach your local hard drive directly.
 
 **Two supported solutions:**
 1. **Cloudflared Tunnel / ngrok (Zero Config)**:

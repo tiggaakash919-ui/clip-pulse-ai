@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Android/Termux Start Script
+# Clip Pulse AI Android/Termux Start Script
 # Runs the local server with Android background wake-lock for 24/7 capture
 
 set -e
@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 echo "=========================================================="
-echo "  Starting PeakCut Mobile Studio (Phone 24/7 Mode)       "
+echo "  Starting Clip Pulse AI Mobile Studio (Phone 24/7 Mode)       "
 echo "=========================================================="
 
 # Prevent Android CPU sleep when screen is turned off
@@ -27,7 +27,7 @@ cleanup() {
         termux-wake-unlock
     fi
     rm -f "$PID_FILE"
-    echo "[INFO] PeakCut stopped cleanly."
+    echo "[INFO] Clip Pulse AI stopped cleanly."
 }
 
 trap cleanup EXIT INT TERM
@@ -38,7 +38,7 @@ echo "[INFO] Dashboard accessible on your phone browser at: http://127.0.0.1:876
 echo "[INFO] Press Ctrl+C or run bash scripts/termux/stop.sh to stop."
 echo ""
 
-# Start PeakCut studio server
+# Start Clip Pulse AI studio server
 if command -v proot-distro >/dev/null 2>&1 && proot-distro list 2>&1 | grep -q "ubuntu"; then
     echo "[INFO] Running via high-performance Ubuntu container (Python 3.12 + FFmpeg)..."
     proot-distro login ubuntu --bind "$REPO_ROOT":/root/PeakCut -- bash -c "cd /root/PeakCut && python3 -m studio.server"

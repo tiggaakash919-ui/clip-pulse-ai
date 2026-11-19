@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -18,28 +20,30 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
+import android.text.InputType;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceResponse;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -53,8 +57,9 @@ public class MainActivity extends Activity {
 
     private static final String PREFS_NAME = "PeakCutPrefs";
     private static final String KEY_SERVER_URL = "server_url";
-    private static final String DEFAULT_SERVER_URL = "http://127.0.0.1:8766/app";
+    private static final String LOCAL_SERVER_URL = "http://127.0.0.1:8766/app";
     private static final String HOTSPOT_SERVER_URL = "http://192.168.43.1:8766/app";
+    private static final int SERVER_PORT = 8766;
 
     private WebView mWebView;
     private ProgressBar mProgressBar;
@@ -73,6 +78,8 @@ public class MainActivity extends Activity {
 
     private SharedPreferences mPrefs;
     private String mCurrentUrl;
+    private ValueCallback<Uri[]> mFileChooserCallback;
+    private static final int FILE_CHOOSER_REQUEST = 4102;
 
     private Handler mRetryHandler = new Handler();
     private int mCountdownSeconds = 3;
@@ -101,7 +108,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mPrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        mCurrentUrl = mPrefs.getString(KEY_SERVER_URL, DEFAULT_SERVER_URL);
+        mCurrentUrl = mPrefs.getString(KEY_SERVER_URL, "");
 
         mWebView = findViewById(R.id.webView);
         mProgressBar = findViewById(R.id.progressBar);
@@ -120,7 +127,15 @@ public class MainActivity extends Activity {
 
         setupButtons();
         setupWebView();
-        loadUrl(mCurrentUrl);
+        if (mCurrentUrl == null || mCurrentUrl.trim().isEmpty()) {
+            mWebView.setVisibility(View.GONE);
+            mErrorLayout.setVisibility(View.VISIBLE);
+            mTvErrorMessage.setText("Paste your running Clip Pulse AI server’s HTTPS URL in Server settings to start. The app and engine are free; you host the engine yourself.");
+            mTvRetryCountdown.setText("Ready when your server is online");
+            showServerDialog();
+        } else {
+            loadUrl(mCurrentUrl);
+        }
     }
 
     private void setStatusColor(String hexColor) {
@@ -142,7 +157,7 @@ public class MainActivity extends Activity {
         mBtnRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentUrl = DEFAULT_SERVER_URL;
+                mCurrentUrl = LOCAL_SERVER_URL;
                 mPrefs.edit().putString(KEY_SERVER_URL, mCurrentUrl).apply();
                 mTvRetryCountdown.setText("Connecting local...");
                 loadUrl(mCurrentUrl);
@@ -203,7 +218,7 @@ public class MainActivity extends Activity {
         String cmd = "cd ~/PeakCut && bash scripts/termux/run_all_24_7.sh";
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard != null) {
-            ClipData clip = ClipData.newPlainText("PeakCut Command", cmd);
+            ClipData clip = ClipData.newPlainText("Clip Pulse AI Command", cmd);
             clipboard.setPrimaryClip(clip);
             Toast.makeText(this, "Command copied! Termux me paste karein.", Toast.LENGTH_SHORT).show();
         }
@@ -211,11 +226,11 @@ public class MainActivity extends Activity {
 
     private void showGuideDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("PeakCut 24/7 Setup Guide");
+        builder.setTitle("Clip Pulse AI 24/7 Setup Guide");
         builder.setMessage(
-            "PeakCut 24/7 bina aapke on kiye khud chalega:\n\n" +
+            "Clip Pulse AI 24/7 bina aapke on kiye khud chalega:\n\n" +
             "1. Phone Boot Auto-Start:\n" +
-            "   Phone switch on / reboot hote hi Termux background me PeakCut engine aur online link khud start kar deta hai.\n\n" +
+            "   Phone switch on / reboot hote hi Termux background me Clip Pulse AI engine aur online link khud start kar deta hai.\n\n" +
             "2. Battery Optimization (Unrestricted):\n" +
             "   Android Settings -> Apps -> Termux -> Battery -> 'Unrestricted' select karein taaki Android CPU ko na roke.\n\n" +
             "3. Termux Lock in Recent Apps:\n" +
@@ -235,32 +250,27 @@ public class MainActivity extends Activity {
 
     private void showServerDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.server_url_prompt);
+        builder.setTitle("Connect to your Clip Pulse AI server");
+        builder.setMessage("Paste the HTTPS address of your running Clip Pulse AI server. The free engine runs on your own computer, phone or server.");
 
         final EditText input = new EditText(this);
         input.setText(mCurrentUrl);
-        input.setSelection(mCurrentUrl.length());
+        input.setHint("https://your-domain.com");
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        input.setSelection(input.length());
         input.setTextColor(Color.WHITE);
         builder.setView(input);
 
         builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String newUrl = input.getText().toString().trim();
-                if (newUrl.contains("trycloudflare.com")) {
-                    if (!newUrl.startsWith("https://")) {
-                        newUrl = "https://" + newUrl.replace("http://", "");
-                    }
-                } else {
-                    if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
-                        newUrl = "http://" + newUrl;
-                    }
-                    if (!newUrl.contains(":")) {
-                        newUrl = newUrl + ":8766";
-                    }
-                }
-                if (!newUrl.endsWith("/app")) {
-                    newUrl = newUrl.replaceAll("/+$", "") + "/app";
+                String newUrl;
+                try {
+                    newUrl = ServerAddress.normalize(input.getText().toString(), SERVER_PORT);
+                } catch (IllegalArgumentException e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return;
                 }
                 mCurrentUrl = newUrl;
                 mPrefs.edit().putString(KEY_SERVER_URL, mCurrentUrl).apply();
@@ -278,7 +288,7 @@ public class MainActivity extends Activity {
         builder.setNegativeButton("Localhost", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                mCurrentUrl = DEFAULT_SERVER_URL;
+                mCurrentUrl = LOCAL_SERVER_URL;
                 mPrefs.edit().putString(KEY_SERVER_URL, mCurrentUrl).apply();
                 loadUrl(mCurrentUrl);
             }
@@ -295,16 +305,7 @@ public class MainActivity extends Activity {
             conn.setConnectTimeout(800);
             conn.setReadTimeout(800);
             conn.setRequestMethod("GET");
-            if (conn.getResponseCode() == 200) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
-                }
-                reader.close();
-                return sb.toString().contains("speech_model_ready");
-            }
+            return conn.getResponseCode() == 200;
         } catch (Exception ignored) {
         } finally {
             if (conn != null) {
@@ -369,7 +370,7 @@ public class MainActivity extends Activity {
     private void scanLocalNetwork() {
         final ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle("Scanning Local Network");
-        progress.setMessage("Searching for PeakCut on Wi-Fi / Hotspot...");
+        progress.setMessage("Searching for Clip Pulse AI on Wi-Fi / Hotspot...");
         progress.setCancelable(false);
         progress.show();
 
@@ -397,7 +398,7 @@ public class MainActivity extends Activity {
                     public void run() {
                         try { progress.dismiss(); } catch (Exception ignored) {}
                         if (finalFoundIp != null) {
-                            Toast.makeText(MainActivity.this, "Found PeakCut on " + finalFoundIp + "! Connecting...", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Found Clip Pulse AI on " + finalFoundIp + "! Connecting...", Toast.LENGTH_LONG).show();
                             mCurrentUrl = "http://" + finalFoundIp + ":8766/app";
                             mPrefs.edit().putString(KEY_SERVER_URL, mCurrentUrl).apply();
                             loadUrl(mCurrentUrl);
@@ -412,9 +413,9 @@ public class MainActivity extends Activity {
 
     private void showScanFailedDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("PeakCut Server Nahi Mila");
+        builder.setTitle("Clip Pulse AI Server Nahi Mila");
         builder.setMessage(
-            "Local network par koi PeakCut server nahi mila.\n\n" +
+            "Local network par koi Clip Pulse AI server nahi mila.\n\n" +
             "Kripya check karein:\n" +
             "1. Phone 1 par Termux server chal raha hai.\n" +
             "2. Dono phones ek hi Wi-Fi se jude hain YA Phone 1 ka Hotspot on karke is phone ko usse connect karein.\n\n" +
@@ -468,9 +469,63 @@ public class MainActivity extends Activity {
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                 return super.onConsoleMessage(consoleMessage);
             }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
+                if (mFileChooserCallback != null) {
+                    mFileChooserCallback.onReceiveValue(null);
+                }
+                mFileChooserCallback = filePathCallback;
+                try {
+                    Intent intent = fileChooserParams.createIntent();
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                    return true;
+                } catch (ActivityNotFoundException | SecurityException e) {
+                    mFileChooserCallback = null;
+                    filePathCallback.onReceiveValue(null);
+                    Toast.makeText(MainActivity.this, "No file picker is available on this device.", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+            }
         });
 
         mWebView.setWebViewClient(new WebViewClient() {
+            private boolean isAllowedPage(String url) {
+                try {
+                    URI target = new URI(url);
+                    URI server = new URI(mCurrentUrl);
+                    int targetPort = target.getPort() == -1 ? ("https".equalsIgnoreCase(target.getScheme()) ? 443 : 80) : target.getPort();
+                    int serverPort = server.getPort() == -1 ? ("https".equalsIgnoreCase(server.getScheme()) ? 443 : 80) : server.getPort();
+                    return target.getHost() != null && server.getHost() != null
+                            && target.getHost().equalsIgnoreCase(server.getHost()) && targetPort == serverPort
+                            && target.getScheme() != null && target.getScheme().matches("(?i)https?");
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                String target = uri == null ? "" : uri.toString();
+                if (isAllowedPage(target)) return false;
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(intent);
+                } catch (ActivityNotFoundException ignored) {}
+                return true;
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (isAllowedPage(url)) return false;
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                } catch (Exception ignored) {}
+                return true;
+            }
+
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if (url != null && !url.equals("about:blank")) {
@@ -503,6 +558,13 @@ public class MainActivity extends Activity {
                     showError("Connection failed to: " + failingUrl + "\n\n" + description);
                 }
             }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                if (request != null && request.isForMainFrame() && response != null && response.getStatusCode() >= 400) {
+                    showError("Clip Pulse AI server returned " + response.getStatusCode() + ". Check the server URL and sign-in details.");
+                }
+            }
         });
 
         mWebView.setDownloadListener(new DownloadListener() {
@@ -511,9 +573,16 @@ public class MainActivity extends Activity {
                 try {
                     DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                     request.setMimeType(mimeType);
+                    String cookie = CookieManager.getInstance().getCookie(url);
+                    if (cookie != null && !cookie.isEmpty()) {
+                        request.addRequestHeader("Cookie", cookie);
+                    }
+                    if (userAgent != null && !userAgent.isEmpty()) {
+                        request.addRequestHeader("User-Agent", userAgent);
+                    }
                     String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
                     request.setTitle(fileName);
-                    request.setDescription("Downloading PeakCut clip...");
+                    request.setDescription("Downloading Clip Pulse AI clip...");
                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
@@ -531,7 +600,7 @@ public class MainActivity extends Activity {
 
     private void loadUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
-            url = DEFAULT_SERVER_URL;
+            url = LOCAL_SERVER_URL;
         }
         mCurrentUrl = url.trim();
         mWebView.loadUrl(mCurrentUrl);
@@ -572,7 +641,35 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_CHOOSER_REQUEST) {
+            if (mFileChooserCallback != null) {
+                Uri[] results = null;
+                if (resultCode == RESULT_OK && data != null) {
+                    if (data.getClipData() != null) {
+                        int count = data.getClipData().getItemCount();
+                        results = new Uri[count];
+                        for (int i = 0; i < count; i++) {
+                            results[i] = data.getClipData().getItemAt(i).getUri();
+                        }
+                    } else if (data.getData() != null) {
+                        results = new Uri[]{data.getData()};
+                    }
+                }
+                mFileChooserCallback.onReceiveValue(results);
+                mFileChooserCallback = null;
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     protected void onDestroy() {
+        if (mFileChooserCallback != null) {
+            mFileChooserCallback.onReceiveValue(null);
+            mFileChooserCallback = null;
+        }
         if (mRetryHandler != null && mRetryRunnable != null) {
             mRetryHandler.removeCallbacks(mRetryRunnable);
         }

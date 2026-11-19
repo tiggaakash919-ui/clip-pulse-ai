@@ -1,6 +1,6 @@
-# Putting PeakCut on a server
+# Putting Clip Pulse AI on a server
 
-PeakCut runs as three containers on one Linux server: the app, PostgreSQL, and Caddy (which handles HTTPS).
+Clip Pulse AI runs as three containers on one Linux server: the app, PostgreSQL, and Caddy (which handles HTTPS).
 
 ## What you need
 
@@ -14,7 +14,7 @@ PeakCut runs as three containers on one Linux server: the app, PostgreSQL, and C
 
 1. Copy this folder to the server (or `git clone` it there).
 2. `cp .env.example .env` and fill it in: the AI lines, `PEAKCUT_DOMAIN`, `POSTGRES_PASSWORD`, and
-   `COMPOSE_PROFILES=own-https` if the server is PeakCut's alone. Put key files, if you use files, in `./secrets/`.
+   `COMPOSE_PROFILES=own-https` if the server is dedicated to Clip Pulse AI. Put key files, if you use files, in `./secrets/`.
 3. `docker compose up -d --build`
    The first start downloads the speech model (about 480 MB) and creates the database tables.
 4. Open `https://your-domain` and sign up. With Docker, accounts are on (`PEAKCUT_ACCOUNTS=1`), so everyone signs in.
@@ -37,7 +37,7 @@ them in `.env`, see `.env.example`). The redirect address to register is shown i
   Creator and Business accounts. Until Meta reviews the app, only accounts added as testers can connect. Instagram
   fetches each clip from a one-hour signed link on your site, so the site needs a public https address.
 - **TikTok** (TikTok for Developers): an app with Login Kit and the Content Posting API (Direct Post), scopes
-  `user.info.basic` and `video.publish`. Until TikTok audits the app, clips are posted as private (PeakCut does
+  `user.info.basic` and `video.publish`. Until TikTok audits the app, clips are posted as private (Clip Pulse AI does
   this by itself and says so on the account).
 
 Instagram and TikTok only accept https redirect addresses.
@@ -67,7 +67,7 @@ Without SMTP on an HTTPS site, no reset emails can be sent.
 - **One server only**: jobs and live recordings run inside the app process. Do not start a second copy of the app
   against the same data.
 - **YouTube downloads from data centres** are sometimes refused by YouTube ("confirm you're not a bot"). If links
-  fail on the server but work at home, the server's address is the cause. PeakCut then pauses YouTube links for a
+  fail on the server but work at home, the server's address is the cause. Clip Pulse AI then pauses YouTube links for a
   few minutes and says so; uploads and Twitch or Kick links keep working.
 - **Updates**: `git pull && docker compose up -d --build`. A restart pauses videos in progress (they pick up
   where they stopped) and live recordings (clips already found are finished from the saved stream).
@@ -76,7 +76,7 @@ Without SMTP on an HTTPS site, no reset emails can be sent.
 
 ## A server that already runs other sites
 
-Leave `COMPOSE_PROFILES=own-https` out of `.env`. PeakCut then listens only on `127.0.0.1:8765` and the web
+Leave `COMPOSE_PROFILES=own-https` out of `.env`. Clip Pulse AI then listens only on `127.0.0.1:8765` and the web
 server that is already there forwards the domain to it: see `deploy/nginx-peakcut.conf`, or
 `deploy/docker-compose.traefik.yml` for Traefik.
 
@@ -90,7 +90,7 @@ With the record proxied (orange cloud):
   pages, clips and the API send `private` or `no-store` and are never cached by Cloudflare.
 - Use SSL/TLS mode Full (strict) with a Cloudflare origin certificate in `secrets/` and
   `PEAKCUT_CADDYFILE=Caddyfile.origin`.
-- Cloudflare's standard plans refuse requests over 100 MB. PeakCut sends big uploads in pieces
+- Cloudflare's standard plans refuse requests over 100 MB. Clip Pulse AI sends big uploads in pieces
   (`PEAKCUT_UPLOAD_PART_MB`, 40 by default), so large files still work.
 
 ## Speech to text on a graphics card

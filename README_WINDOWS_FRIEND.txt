@@ -1,9 +1,9 @@
 ==========================================================
-   PEAKCUT - WINDOWS PC PAR 24/7 SETUP GUIDE (FOR FRIEND)
+   CLIP PULSE AI - WINDOWS PC PAR 24/7 SETUP GUIDE (FOR FRIEND)
 ==========================================================
 
 Aapka dost apne phone se YouTube live stream clips banana chahta hai.
-Aapke PC par PeakCut 24/7 background me chalega aur wo apne phone se kahin se bhi ise control kar sakta hai!
+Aapke PC par Clip Pulse AI 24/7 background me chalega aur wo apne phone se kahin se bhi ise control kar sakta hai!
 
 ==========================================================
 Agar "Python was not found" error aaya hai:

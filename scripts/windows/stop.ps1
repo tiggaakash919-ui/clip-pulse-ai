@@ -1,4 +1,4 @@
-# PowerShell Stop Script for PeakCut on Windows
+# PowerShell Stop Script for Clip Pulse AI on Windows
 # Cleanly terminates server and child capture processes.
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -6,7 +6,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 Set-Location $RepoRoot
 
-Write-Host "Stopping PeakCut..." -ForegroundColor Yellow
+Write-Host "Stopping Clip Pulse AI..." -ForegroundColor Yellow
 
 $PidFile = Join-Path $RepoRoot "data\peakcut.pid"
 if (Test-Path $PidFile) {
@@ -21,7 +21,7 @@ if (Test-Path $PidFile) {
 # Also ensure any lingering python processes running studio.server are terminated
 Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match "studio\.server" } | ForEach-Object {
     Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
-    Write-Host "Stopped PeakCut instance (PID: $($_.ProcessId))" -ForegroundColor Green
+    Write-Host "Stopped Clip Pulse AI instance (PID: $($_.ProcessId))" -ForegroundColor Green
 }
 
 # Reset Windows sleep state
@@ -35,4 +35,4 @@ public static extern uint SetThreadExecutionState(uint esFlags);
     $Win32Sleep::SetThreadExecutionState($ES_CONTINUOUS) | Out-Null
 } catch {}
 
-Write-Host "PeakCut stopped cleanly." -ForegroundColor Green
+Write-Host "Clip Pulse AI stopped cleanly." -ForegroundColor Green

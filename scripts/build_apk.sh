@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# PeakCut Android APK Build Script
+# Clip Pulse AI Android APK Build Script
 # Uses Android SDK tools inside Ubuntu proot-distro container
 
 set -e
@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "=========================================================="
-echo "  Building PeakCut Android App (APK)                     "
+echo "  Building Clip Pulse AI Android App (APK)                     "
 echo "=========================================================="
 
 # Run build pipeline inside Ubuntu container with Android SDK
@@ -66,7 +66,7 @@ $APKSIGNER sign --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android 
 
 $APKSIGNER verify build/PeakCut.apk
 cp -f build/PeakCut.apk /root/PeakCut/data/PeakCut.apk
-echo "[SUCCESS] PeakCut.apk built and verified successfully!"
+echo "[SUCCESS] Clip Pulse AI APK built and verified successfully!"
 '
 
 # Copy final APK to user download folder

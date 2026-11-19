@@ -1,5 +1,5 @@
 #!/data/user/0/com.termux/files/usr/bin/bash
-# Stop PeakCut Online Tunnel
+# Stop Clip Pulse AI Online Tunnel
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -14,4 +14,4 @@ fi
 pkill -9 -f "cloudflared" 2>/dev/null || true
 rm -f "$REPO_ROOT/data/public_url.txt"
 
-echo "PeakCut Online Tunnel stopped. (Local server is still running)."
+echo "Clip Pulse AI Online Tunnel stopped. (Local server is still running)."
