@@ -38,8 +38,15 @@ echo "[INFO] Dashboard accessible on your phone browser at: http://127.0.0.1:876
 echo "[INFO] Press Ctrl+C or run bash scripts/termux/stop.sh to stop."
 echo ""
 
+# Ubuntu is only usable when it is actually installed: "proot-distro list" also
+# prints the ones that are merely available to download, so check the folder.
+ubuntu_installed() {
+    [ -d "$PREFIX/var/lib/proot-distro/containers/ubuntu" ] || \
+    [ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu" ]
+}
+
 # Start Clip Pulse AI studio server
-if command -v proot-distro >/dev/null 2>&1 && proot-distro list 2>&1 | grep -q "ubuntu"; then
+if command -v proot-distro >/dev/null 2>&1 && ubuntu_installed; then
     echo "[INFO] Running via high-performance Ubuntu container (Python 3.12 + FFmpeg)..."
     proot-distro login ubuntu --bind "$REPO_ROOT":/root/ClipPulse -- bash -c "cd /root/ClipPulse && python3 -m studio.server"
 else
