@@ -49,6 +49,9 @@ while true; do
 
     case "$code" in
         0|130|143) break ;;     # Ctrl+C was pressed: stop for good
+        2) echo "[INFO] Setup adhoora hai (packages nahi lage). Install ke baad phir chalao."
+           echo "[INFO] Ye loop yahin ruk raha hai."
+           break ;;
     esac
 
     fails=$((fails + 1))

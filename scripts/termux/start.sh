@@ -45,6 +45,27 @@ ubuntu_installed() {
     [ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/ubuntu" ]
 }
 
+# Without these packages the engine dies with a Python error that repeats
+# every few seconds. Say it in plain words instead, and stop.
+packages_ready() {
+    if command -v proot-distro >/dev/null 2>&1 && ubuntu_installed; then
+        proot-distro login ubuntu -- bash -c \
+            'python3 -c "import fastapi, uvicorn, sqlalchemy"' >/dev/null 2>&1
+    else
+        python -c "import fastapi, uvicorn, sqlalchemy" >/dev/null 2>&1
+    fi
+}
+
+if ! packages_ready; then
+    echo ""
+    echo "[STOP] Engine ke Python packages abhi nahi lage hain."
+    echo "       Isliye server start nahi ho sakta (bar-bar error aayega)."
+    echo "       Ek baar setup chalao, phir dobara start karo:"
+    echo "         bash /sdcard/Download/ClipPulse-AI-Setup/install.sh"
+    echo "       (install.sh jahan rakha hai, wahi path daalo)"
+    exit 2
+fi
+
 # Start Clip Pulse AI studio server
 if command -v proot-distro >/dev/null 2>&1 && ubuntu_installed; then
     echo "[INFO] Running via high-performance Ubuntu container (Python 3.12 + FFmpeg)..."
